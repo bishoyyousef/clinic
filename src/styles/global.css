@@ -1,9 +1,8 @@
-/* Design System Imports */
-@import './styles/_variables.css';
-@import './styles/_reset.css';
-@import './styles/_typography.css';
+@import './variables.css';
+@import './reset.css';
+@import './typography.css';
 
-/* Global Interactive & Accent Styling */
+/* Focus outline helper */
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,

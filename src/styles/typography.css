@@ -1,4 +1,3 @@
-/* Font selection based on html lang/dir attributes */
 html {
   font-family: var(--font-latin);
 }

@@ -52,7 +52,7 @@
               }
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles/global.css"
             ],
             "scripts": [],
             "baseHref": "/staff/"
@@ -120,7 +120,7 @@
               }
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles/global.css"
             ],
             "scripts": []
           }
