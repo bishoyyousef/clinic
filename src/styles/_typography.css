@@ -1,0 +1,77 @@
+/* Font selection based on html lang/dir attributes */
+html {
+  font-family: var(--font-latin);
+}
+
+html[lang="ar"] {
+  font-family: var(--font-arabic);
+}
+
+/* Typography Hierarchy */
+h1, .h1 {
+  font-size: 2.25rem; /* 36px */
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+h2, .h2 {
+  font-size: 1.75rem; /* 28px */
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+h3, .h3 {
+  font-size: 1.375rem; /* 22px */
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+h4, .h4 {
+  font-size: 1.125rem; /* 18px */
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+h5, .h5 {
+  font-size: 1rem; /* 16px */
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+body, .body-md {
+  font-size: 0.9375rem; /* 15px */
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.body-lg {
+  font-size: 1.0625rem; /* 17px */
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.body-sm {
+  font-size: 0.8125rem; /* 13px */
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.body-xs {
+  font-size: 0.75rem; /* 12px */
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.font-bold {
+  font-weight: 700;
+}

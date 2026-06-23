@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Clarity Clinic — Staff Dashboard</title>
+  <base href="/staff/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  
+  <!-- Font Preconnect & Imports -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&display=swap" rel="stylesheet">
+
+  <!-- Instant Theming & Language Bootstrapper to prevent flashing -->
+  <script>
+    (function () {
+      const savedTheme = localStorage.getItem('clinic-staff-theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      
+      const savedLang = localStorage.getItem('clinic-staff-lang') || 'en';
+      document.documentElement.setAttribute('lang', savedLang);
+      document.documentElement.setAttribute('dir', savedLang === 'ar' ? 'rtl' : 'ltr');
+    })();
+  </script>
+</head>
+<body>
+  <app-root></app-root>
+</body>
+</html>

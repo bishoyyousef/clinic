@@ -1,0 +1,59 @@
+/* Design System Imports */
+@import './styles/_variables.css';
+@import './styles/_reset.css';
+@import './styles/_typography.css';
+
+/* Global Interactive & Accent Styling */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Common utility classes */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.text-accent {
+  color: var(--accent);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-success {
+  color: var(--success);
+}
+
+.text-warning {
+  color: var(--warning);
+}
+
+.text-danger {
+  color: var(--danger);
+}
+
+.bg-surface {
+  background-color: var(--surface);
+}
+
+.bg-bg {
+  background-color: var(--bg);
+}
+
+/* RTL Helpers */
+[dir="rtl"] .rtl-flip {
+  transform: scaleX(-1);
+}
