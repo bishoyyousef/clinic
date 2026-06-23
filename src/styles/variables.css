@@ -1,0 +1,102 @@
+:root {
+  /* Fonts */
+  --font-latin: 'Public Sans', system-ui, -apple-system, sans-serif;
+  --font-arabic: 'Cairo', system-ui, -apple-system, sans-serif;
+
+  /* Spacing Scale (4px base) */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 20px;
+  --s6: 24px;
+  --s8: 32px;
+  --s10: 40px;
+  --s12: 48px;
+  --s16: 64px;
+  --s20: 80px;
+
+  /* Border Radii */
+  --r-sm: 6px;
+  --r: 10px;
+  --r-lg: 14px;
+  --r-xl: 20px;
+  --r-full: 999px;
+
+  /* Animations & Transitions */
+  --ease: cubic-bezier(.32, .72, .3, 1);
+  --dur: .18s;
+  --dur-lg: .28s;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* Layout */
+  --sidebar-width: 260px;
+  --sidebar-collapsed-width: 72px;
+  --header-height: 70px;
+}
+
+/* Light Theme Variables */
+:root, [data-theme="light"] {
+  --bg: #F7FAFA;
+  --surface: #FFFFFF;
+  --surface-2: #F1F6F5;
+  --border: #E4ECEC;
+  --text: #13201F;
+  --text-muted: #5F716F;
+  
+  --accent: #0E9488;
+  --accent-hover: #0B7A70;
+  --accent-soft: #E3F4F2;
+  --on-accent: #FFFFFF;
+  
+  --success: #2F9E6B;
+  --success-soft: #E8F5EE;
+  --warning: #C9852B;
+  --warning-soft: #FDF3E7;
+  --danger: #CF4636;
+  --danger-soft: #FCECEB;
+  --info: #2B6CB0;
+  --info-soft: #EBF8FF;
+  
+  --scroll-thumb: #D1DBDB;
+  --scroll-track: transparent;
+  
+  --rtl-flip: 1;
+}
+
+/* Dark Theme Variables */
+[data-theme="dark"] {
+  --bg: #0C1313;
+  --surface: #121C1B;
+  --surface-2: #192726;
+  --border: #223533;
+  --text: #E5ECEB;
+  --text-muted: #8FA4A2;
+  
+  --accent: #14B8A6;
+  --accent-hover: #0D9488;
+  --accent-soft: #112F2C;
+  --on-accent: #070B0B;
+  
+  --success: #34D399;
+  --success-soft: #0E2E24;
+  --warning: #F59E0B;
+  --warning-soft: #342405;
+  --danger: #F87171;
+  --danger-soft: #361717;
+  --info: #60A5FA;
+  --info-soft: #112543;
+  
+  --scroll-thumb: #2F4442;
+  --scroll-track: transparent;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+}
