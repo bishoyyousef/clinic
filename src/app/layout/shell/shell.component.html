@@ -1,0 +1,14 @@
+<div class="shell-container">
+  <!-- Role-based collapsible Sidebar -->
+  <app-sidebar [mobileOpen]="mobileSidebarOpen()" (closeMobile)="closeSidebar()"></app-sidebar>
+  
+  <!-- Main Content Layout Section -->
+  <div class="main-layout">
+    <app-header (toggleMobileSidebar)="toggleSidebar()"></app-header>
+    
+    <!-- Render active feature components -->
+    <main class="content-area">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

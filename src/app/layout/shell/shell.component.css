@@ -1,0 +1,38 @@
+.shell-container {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background-color: var(--bg);
+}
+
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  min-width: 0; /* Prevents flex items from overflowing horizontal boundaries */
+  transition: margin var(--dur) var(--ease);
+}
+
+/* RTL layout adjustment */
+[dir="rtl"] .main-layout {
+  margin-left: 0;
+  margin-right: var(--sidebar-width);
+}
+
+.content-area {
+  flex: 1;
+  padding: var(--s6);
+  overflow-y: auto;
+}
+
+/* Responsive configurations */
+@media (max-width: 1000px) {
+  .main-layout {
+    margin-left: 0;
+  }
+
+  [dir="rtl"] .main-layout {
+    margin-right: 0;
+  }
+}
