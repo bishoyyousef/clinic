@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { ShellComponent } from './layout/shell/shell.component';
 import { authGuard } from './core/guards/auth.guard';
+import { roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
   // Public Login Route
@@ -20,6 +21,7 @@ export const routes: Routes = [
     children: [
       {
         path: 'dashboard',
+        canActivate: [roleGuard(['Admin', 'Receptionist'])],
         loadComponent: () =>
           import('./features/dashboard/dashboard.component').then(
             (m) => m.DashboardComponent
@@ -27,6 +29,7 @@ export const routes: Routes = [
       },
       {
         path: 'patients',
+        canActivate: [roleGuard(['Admin', 'Receptionist', 'Doctor'])],
         loadComponent: () =>
           import('./features/patients/patients.component').then(
             (m) => m.PatientsComponent
@@ -34,6 +37,7 @@ export const routes: Routes = [
       },
       {
         path: 'doctors',
+        canActivate: [roleGuard(['Admin', 'Receptionist'])],
         loadComponent: () =>
           import('./features/doctors/doctors.component').then(
             (m) => m.DoctorsComponent
@@ -41,6 +45,7 @@ export const routes: Routes = [
       },
       {
         path: 'services',
+        canActivate: [roleGuard(['Admin', 'Receptionist'])],
         loadComponent: () =>
           import('./features/services/services.component').then(
             (m) => m.ServicesComponent
@@ -48,6 +53,7 @@ export const routes: Routes = [
       },
       {
         path: 'appointments',
+        canActivate: [roleGuard(['Admin', 'Receptionist'])],
         loadComponent: () =>
           import('./features/appointments/appointments.component').then(
             (m) => m.AppointmentsComponent
@@ -55,6 +61,7 @@ export const routes: Routes = [
       },
       {
         path: 'settings',
+        canActivate: [roleGuard(['Admin', 'Receptionist', 'Doctor'])],
         loadComponent: () =>
           import('./features/settings/settings.component').then(
             (m) => m.SettingsComponent
