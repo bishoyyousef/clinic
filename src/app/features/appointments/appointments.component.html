@@ -241,3 +241,288 @@
     </app-button>
   </ng-container>
 </ng-template>
+
+<!-- ========================================== -->
+<!-- 3. APPOINTMENT DETAILS DIALOG / MODAL      -->
+<!-- ========================================== -->
+<app-modal
+  [isOpen]="isDetailsOpen()"
+  [title]="activeAppointment() ? 'Appointment Details #' + activeAppointment()?.id : 'Loading Details...'"
+  size="lg"
+  [hasFooter]="activeAppointment() !== null"
+  (close)="closeDetails()">
+  
+  <!-- Loading Details State -->
+  <div class="loading-state" *ngIf="isLoadingDetails()">
+    <app-loading-spinner size="md"></app-loading-spinner>
+    <p class="loading-text">Loading comprehensive appointment file...</p>
+  </div>
+
+  <!-- Loaded Appointment Details -->
+  <div *ngIf="!isLoadingDetails() && activeAppointment() as app">
+    <!-- Status Banner Header -->
+    <div class="details-status-banner">
+      <div class="banner-left">
+        <app-status-badge [status]="app.status"></app-status-badge>
+        <span class="banner-time">{{ app.date | date:'EEEE, MMMM d, yyyy' }} at {{ app.startTime }} - {{ app.endTime }}</span>
+      </div>
+      <span class="mode-badge" [class.online]="app.mode === 'Online'">
+        {{ app.mode }} Booking
+      </span>
+    </div>
+
+    <!-- Main details sections grid -->
+    <div class="details-grid">
+      <!-- 1. Patient Info -->
+      <div class="details-section">
+        <h4 class="section-hdr">Patient Details</h4>
+        <div class="detail-row">
+          <span class="detail-lbl">Full Name</span>
+          <span class="detail-val" style="color: var(--accent); font-weight: 700;">{{ app.patientName }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-lbl">Patient File ID</span>
+          <span class="detail-val">#{{ app.patientId }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-lbl">Portal Access Status</span>
+          <span class="detail-val">Active File</span>
+        </div>
+      </div>
+
+      <!-- 2. Doctor Info -->
+      <div class="details-section">
+        <h4 class="section-hdr">Specialist Details</h4>
+        <div class="detail-row">
+          <span class="detail-lbl">Assigned Doctor</span>
+          <span class="detail-val">Dr. {{ app.doctorName }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-lbl">Doctor UUID</span>
+          <span class="detail-val" style="font-size: 0.75rem; font-family: monospace; font-weight: normal; word-break: break-all;">{{ app.doctorId }}</span>
+        </div>
+      </div>
+
+      <!-- 3. Service Info -->
+      <div class="details-section">
+        <h4 class="section-hdr">Consultation Details</h4>
+        <div class="detail-row">
+          <span class="detail-lbl">Selected Service</span>
+          <span class="detail-val">{{ app.serviceName }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-lbl">Service ID</span>
+          <span class="detail-val">#{{ app.serviceId }}</span>
+        </div>
+        <div class="detail-row" *ngIf="app.meetingLink">
+          <span class="detail-lbl">Telehealth Meeting Link</span>
+          <span class="detail-val">
+            <a [href]="app.meetingLink" target="_blank" style="color: var(--accent); text-decoration: underline; font-weight: bold;">Join Video Consultation</a>
+          </span>
+        </div>
+      </div>
+
+      <!-- 4. Payment Info -->
+      <div class="details-section">
+        <h4 class="section-hdr">Billing & Payments</h4>
+        <div class="detail-row">
+          <span class="detail-lbl">Total Fee</span>
+          <span class="detail-val" style="color: var(--text); font-weight: 700;">
+            {{ (app.payment?.amount || 0) | number:'1.2-2' }} EGP
+          </span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-lbl">Payment Mode</span>
+          <span class="detail-val" style="text-transform: capitalize;">{{ app.payment?.method || 'Cash' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-lbl">Payment Status</span>
+          <span class="detail-val">
+            <span [style.color]="app.payment?.status === 'Paid' ? 'var(--success)' : 'var(--danger)'" style="font-weight: 700;">
+              {{ app.payment?.status || 'Unpaid' }}
+            </span>
+          </span>
+        </div>
+        <div class="detail-row" *ngIf="app.payment?.transactionRef">
+          <span class="detail-lbl">Transaction Ref</span>
+          <span class="detail-val" style="font-size: 0.75rem; font-family: monospace; font-weight: normal;">{{ app.payment?.transactionRef }}</span>
+        </div>
+      </div>
+
+      <!-- 5. Clinical Visit Record (If completed) -->
+      <div class="details-section full-width" *ngIf="app.visit">
+        <h4 class="section-hdr">Clinical Consultation Record</h4>
+        <div class="detail-row">
+          <span class="detail-lbl">Diagnosis</span>
+          <span class="detail-val" style="text-align: left; font-weight: 700; color: var(--accent);">{{ app.visit.diagnosis }}</span>
+        </div>
+        <div class="detail-row" style="margin-top: var(--s2); flex-direction: column; align-items: flex-start; gap: var(--s1);">
+          <span class="detail-lbl">Doctor Consultation Notes</span>
+          <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; font-style: italic; margin: 0; padding-left: var(--s2); border-left: 2px solid var(--border);">
+            {{ app.visit.notes || 'No attendance notes recorded.' }}
+          </p>
+        </div>
+        
+        <!-- Prescriptions -->
+        <div style="margin-top: var(--s3);" *ngIf="app.visit.prescription && app.visit.prescription.length > 0">
+          <span class="detail-lbl">Prescribed Treatment</span>
+          <div class="visit-prescriptions">
+            <span class="prescription-badge" *ngFor="let item of app.visit.prescription">
+              {{ item.drug }} ({{ item.dosage }} for {{ item.duration }})
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons Footer -->
+  <div modal-footer class="modal-actions-footer" *ngIf="activeAppointment() as app">
+    <!-- Universal Action Loading Indicator -->
+    <div style="display: flex; align-items: center; gap: var(--s2); margin-right: auto;" *ngIf="isActionLoading()">
+      <app-loading-spinner size="sm"></app-loading-spinner>
+      <span style="font-size: 0.8125rem; color: var(--text-muted);">Processing transaction...</span>
+    </div>
+
+    <!-- Active State Buttons -->
+    <ng-container *ngIf="!isActionLoading()">
+      <!-- Confirmed State Actions -->
+      <ng-container *ngIf="app.status === 'Confirmed'">
+        <app-button variant="primary" (click)="onCheckIn(app.id)">
+          Check-In Patient
+        </app-button>
+        <app-button variant="secondary" (click)="openReschedule()">
+          Reschedule
+        </app-button>
+        <app-button variant="secondary" (click)="onMarkNoShow(app.id)">
+          Mark No-Show
+        </app-button>
+        <app-button variant="text" class="text-danger" (click)="onCancelAppointment(app.id)">
+          Cancel Appointment
+        </app-button>
+      </ng-container>
+
+      <!-- Arrived (Checked In) State Actions -->
+      <ng-container *ngIf="app.status === 'Arrived'">
+        <app-button variant="primary" (click)="onComplete(app.id)">
+          Complete Consultation
+        </app-button>
+        <app-button 
+          variant="secondary" 
+          *ngIf="app.payment?.status !== 'Paid' && app.payment?.method === 'Cash'" 
+          (click)="onMarkCashPaid(app.id)">
+          Record Cash Payment
+        </app-button>
+        <app-button variant="secondary" (click)="onMarkNoShow(app.id)">
+          Mark No-Show
+        </app-button>
+      </ng-container>
+
+      <!-- PendingPayment State Actions -->
+      <ng-container *ngIf="app.status === 'PendingPayment'">
+        <app-button 
+          variant="primary" 
+          *ngIf="app.payment?.method === 'Cash'" 
+          (click)="onMarkCashPaid(app.id)">
+          Record Cash Payment
+        </app-button>
+        <app-button variant="secondary" (click)="openReschedule()">
+          Reschedule
+        </app-button>
+        <app-button variant="text" class="text-danger" (click)="onCancelAppointment(app.id)">
+          Cancel Appointment
+        </app-button>
+      </ng-container>
+    </ng-container>
+
+    <!-- Close Drawer -->
+    <app-button variant="secondary" (click)="closeDetails()" [disabled]="isActionLoading()">
+      Close
+    </app-button>
+  </div>
+</app-modal>
+
+<!-- ========================================== -->
+<!-- 4. RESCHEDULE APPOINTMENT SUB-MODAL        -->
+<!-- ========================================== -->
+<app-modal
+  [isOpen]="isRescheduleOpen()"
+  title="Reschedule Appointment"
+  size="md"
+  [hasFooter]="true"
+  (close)="closeReschedule()">
+  
+  <div class="modal-form" *ngIf="activeAppointment() as app">
+    <!-- Selected Date Input Picker -->
+    <div class="form-group">
+      <label for="reschedule-date-picker">Select New Date <span class="required-asterisk">*</span></label>
+      <input 
+        id="reschedule-date-picker"
+        type="date" 
+        class="filter-control"
+        [min]="minRescheduleDate"
+        [ngModel]="rescheduleDate()"
+        (ngModelChange)="onRescheduleDateChange($event)"
+      />
+    </div>
+
+    <!-- Available slots section -->
+    <div class="form-group" style="margin-top: var(--s4);">
+      <label>Available Consultation Slots <span class="required-asterisk">*</span></label>
+      
+      <!-- Loading slots spinner -->
+      <div class="loading-slots-state" *ngIf="isFetchingSlots()" style="display: flex; align-items: center; gap: var(--s2); padding: var(--s3) 0;">
+        <app-loading-spinner size="sm"></app-loading-spinner>
+        <span style="font-size: 0.875rem; color: var(--text-muted);">Fetching available slots for Dr. {{ app.doctorName }}...</span>
+      </div>
+
+      <!-- Slots Pill Grid -->
+      <ng-container *ngIf="!isFetchingSlots()">
+        <div class="slots-grid" *ngIf="availableSlots().length > 0">
+          <button
+            type="button"
+            *ngFor="let slot of availableSlots()"
+            class="slot-pill"
+            [class.selected]="selectedSlot() === slot"
+            (click)="selectedSlot.set(slot)"
+          >
+            {{ slot }}
+          </button>
+        </div>
+
+        <!-- Empty slots warning banner -->
+        <div class="slots-empty-banner" *ngIf="availableSlots().length === 0">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" style="flex-shrink: 0;">
+            <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span>No available booking slots on this date. Please select another date.</span>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Footer Actions -->
+  <div modal-footer class="modal-actions-footer" *ngIf="activeAppointment() as app">
+    <!-- Action Submitting Loader -->
+    <div style="display: flex; align-items: center; gap: var(--s2); margin-right: auto;" *ngIf="isActionLoading()">
+      <app-loading-spinner size="sm"></app-loading-spinner>
+      <span style="font-size: 0.8125rem; color: var(--text-muted);">Saving new schedule...</span>
+    </div>
+
+    <!-- Actions -->
+    <ng-container *ngIf="!isActionLoading()">
+      <app-button 
+        variant="primary" 
+        [disabled]="selectedSlot() === ''"
+        (click)="onConfirmReschedule()">
+        Confirm Reschedule
+      </app-button>
+    </ng-container>
+    
+    <app-button variant="secondary" (click)="closeReschedule()" [disabled]="isActionLoading()">
+      Cancel
+    </app-button>
+  </div>
+</app-modal>

@@ -408,3 +408,24 @@
   max-width: 420px;
   line-height: 1.5;
 }
+
+/* ========================================== */
+/* APPOINTMENT SPECIFIC CLINICAL NOTES STYLES */
+/* ========================================== */
+
+/* Visit Treatment Prescriptions */
+.visit-prescriptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+  margin-top: var(--s2);
+}
+
+.prescription-badge {
+  background-color: var(--accent-soft);
+  color: var(--accent);
+  padding: var(--s1) var(--s2.5);
+  border-radius: var(--r-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+}

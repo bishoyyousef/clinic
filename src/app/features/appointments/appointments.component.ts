@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Observable } from 'rxjs';
 import { AppointmentService } from '../../core/services/appointment.service';
 import { DoctorService } from '../../core/services/doctor.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -12,6 +12,7 @@ import { StatusBadgeComponent } from '../../shared/components/status-badge/statu
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
+import { ModalComponent } from '../../shared/components/modal/modal.component';
 
 @Component({
   selector: 'app-appointments',
@@ -23,7 +24,8 @@ import { ButtonComponent } from '../../shared/components/button/button.component
     StatusBadgeComponent,
     LoadingSpinnerComponent,
     EmptyStateComponent,
-    ButtonComponent
+    ButtonComponent,
+    ModalComponent
   ],
   templateUrl: './appointments.component.html',
   styleUrl: './appointments.component.css'
@@ -45,6 +47,20 @@ export class AppointmentsComponent implements OnInit {
   doctors = signal<DoctorListItemDto[]>([]);
   isLoading = signal<boolean>(false);
   errorMessage = signal<string>('');
+
+  // Details Modal/Drawer State Signals
+  isDetailsOpen = signal<boolean>(false);
+  isLoadingDetails = signal<boolean>(false);
+  isActionLoading = signal<boolean>(false);
+  activeAppointment = signal<AppointmentDto | null>(null);
+
+  // Rescheduling Sub-Modal State Signals
+  isRescheduleOpen = signal<boolean>(false);
+  isFetchingSlots = signal<boolean>(false);
+  rescheduleDate = signal<string>('');
+  availableSlots = signal<string[]>([]);
+  selectedSlot = signal<string>('');
+  minRescheduleDate = new Date().toISOString().split('T')[0];
 
   // Available Lifecycle Status Options for Filter Dropdown
   statusOptions: { value: AppointmentStatus | ''; label: string }[] = [
@@ -77,9 +93,6 @@ export class AppointmentsComponent implements OnInit {
     
     const current = new Date(dateStr);
     const day = current.getDay(); // 0 = Sunday, 1 = Monday, etc.
-    
-    // Calculate the difference to the most recent Monday
-    // If Sunday (0), difference to Monday is -6. Otherwise, it is 1 - day.
     const diffToMonday = day === 0 ? -6 : 1 - day;
     
     const monday = new Date(current);
@@ -95,7 +108,7 @@ export class AppointmentsComponent implements OnInit {
       const date = String(d.getDate()).padStart(2, '0');
       const dateStrFormatted = `${year}-${month}-${date}`;
       
-      const dayLabel = d.toLocaleDateString('en-US', { weekday: 'short' }); // "Mon", "Tue", etc.
+      const dayLabel = d.toLocaleDateString('en-US', { weekday: 'short' });
       const dayNum = d.getDate();
       
       days.push({
@@ -109,7 +122,7 @@ export class AppointmentsComponent implements OnInit {
   });
 
   /**
-   * Computes a user-friendly label representing the active week range (e.g. "Jun 22 – 28, 2026").
+   * Computes a user-friendly label representing the active week range.
    */
   weekRangeLabel = computed(() => {
     const days = this.weekDays();
@@ -144,7 +157,7 @@ export class AppointmentsComponent implements OnInit {
   }
 
   /**
-   * Fetches the list of active doctors from the server to populate the filter dropdown.
+   * Fetches the list of active doctors from the server.
    */
   loadDoctors(): void {
     this.doctorService.getAll().subscribe({
@@ -159,8 +172,7 @@ export class AppointmentsComponent implements OnInit {
   }
 
   /**
-   * Fetches appointments. In List View, loads a single day.
-   * In Calendar View, parallel-loads the 7 days of the active week and flattens them.
+   * Fetches appointments. List view queries single date. Calendar view parallel-queries the week.
    */
   loadAppointments(): void {
     this.isLoading.set(true);
@@ -194,7 +206,6 @@ export class AppointmentsComponent implements OnInit {
         return;
       }
 
-      // Query all 7 days of the active week in parallel
       const requests = days.map(day => 
         this.appointmentService.getCalendar(
           day.dateStr,
@@ -205,7 +216,6 @@ export class AppointmentsComponent implements OnInit {
 
       forkJoin(requests).subscribe({
         next: (results) => {
-          // Flatten appointments list across the entire week
           const allAppointments = results.flat();
           this.appointments.set(allAppointments);
           this.isLoading.set(false);
@@ -238,7 +248,7 @@ export class AppointmentsComponent implements OnInit {
   }
 
   /**
-   * Shifts the active week view back by 7 days.
+   * Shifts active week back 7 days.
    */
   prevWeek(): void {
     const current = new Date(this.filterDate());
@@ -248,7 +258,7 @@ export class AppointmentsComponent implements OnInit {
   }
 
   /**
-   * Shifts the active week view forward by 7 days.
+   * Shifts active week forward 7 days.
    */
   nextWeek(): void {
     const current = new Date(this.filterDate());
@@ -258,7 +268,7 @@ export class AppointmentsComponent implements OnInit {
   }
 
   /**
-   * Navigates the calendar and list date to today.
+   * Navigates active date to today.
    */
   goToToday(): void {
     const todayStr = new Date().toISOString().split('T')[0];
@@ -269,8 +279,7 @@ export class AppointmentsComponent implements OnInit {
   }
 
   /**
-   * Retrieves and sorts the loaded appointments for a specific day of the week.
-   * @param dateStr Target day date string (YYYY-MM-DD)
+   * Retrieves and sorts appointments for a specific date.
    */
   getAppointmentsForDay(dateStr: string): AppointmentDto[] {
     return this.appointments()
@@ -278,10 +287,202 @@ export class AppointmentsComponent implements OnInit {
       .sort((a, b) => a.startTime.localeCompare(b.startTime));
   }
 
+  // ==========================================
+  // APPOINTMENT DETAILS & LIFECYCLE ACTIONS
+  // ==========================================
+
   /**
-   * Placeholder for details drawer (Phase 4).
+   * Opens the details modal and loads full data for a specific appointment.
+   * @param appointment Appointment summary object
    */
   onViewDetails(appointment: AppointmentDto): void {
-    this.toastService.show(`Details for appointment #${appointment.id} (Coming in Phase 4)`, 'info');
+    this.activeAppointment.set(null);
+    this.isDetailsOpen.set(true);
+    this.isLoadingDetails.set(true);
+
+    this.appointmentService.getById(appointment.id).subscribe({
+      next: (res) => {
+        this.activeAppointment.set(res);
+        this.isLoadingDetails.set(false);
+      },
+      error: (err) => {
+        this.isLoadingDetails.set(false);
+        const msg = err.error?.message || err.message || 'Failed to retrieve appointment details.';
+        this.toastService.show(msg, 'error');
+        this.closeDetails();
+      }
+    });
+  }
+
+  /**
+   * Closes the details modal.
+   */
+  closeDetails(): void {
+    this.isDetailsOpen.set(false);
+    this.activeAppointment.set(null);
+  }
+
+  /**
+   * Unified action execution helper. Handles loading state, list reloads, detail refreshes, and toasts.
+   */
+  private executeAction(action$: Observable<void>, successMessage: string): void {
+    const activeApp = this.activeAppointment();
+    if (!activeApp) return;
+
+    this.isActionLoading.set(true);
+    action$.subscribe({
+      next: () => {
+        this.toastService.show(successMessage, 'success');
+        this.loadAppointments(); // Reload background schedule
+
+        // Reload the details view
+        this.appointmentService.getById(activeApp.id).subscribe({
+          next: (updated) => {
+            this.activeAppointment.set(updated);
+            this.isActionLoading.set(false);
+          },
+          error: () => {
+            this.isActionLoading.set(false);
+          }
+        });
+      },
+      error: (err) => {
+        this.isActionLoading.set(false);
+        const msg = err.error?.message || err.message || 'Action execution failed.';
+        this.toastService.show(msg, 'error');
+      }
+    });
+  }
+
+  /**
+   * Transitions appointment status to 'Arrived'.
+   */
+  onCheckIn(id: number): void {
+    this.executeAction(this.appointmentService.checkIn(id), 'Patient checked in successfully.');
+  }
+
+  /**
+   * Transitions appointment status to 'NoShow'.
+   */
+  onMarkNoShow(id: number): void {
+    this.executeAction(this.appointmentService.markNoShow(id), 'Appointment marked as No-Show.');
+  }
+
+  /**
+   * Records cash payment, updating payment status to Paid.
+   */
+  onMarkCashPaid(id: number): void {
+    this.executeAction(this.appointmentService.markCashPaid(id), 'Cash payment recorded successfully.');
+  }
+
+  /**
+   * Completes the consultation and transitions status to 'Completed'.
+   */
+  onComplete(id: number): void {
+    this.executeAction(this.appointmentService.complete(id), 'Consultation completed successfully.');
+  }
+
+  /**
+   * Cancels the appointment, transitioning status to 'Cancelled'.
+   */
+  onCancelAppointment(id: number): void {
+    if (confirm('Are you sure you want to cancel this appointment? This action cannot be undone.')) {
+      this.executeAction(this.appointmentService.cancel(id), 'Appointment cancelled successfully.');
+    }
+  }
+
+  // ==========================================
+  // RESCHEDULING ACTIONS & SERVICES
+  // ==========================================
+
+  /**
+   * Prepares and opens the rescheduling sub-modal.
+   */
+  openReschedule(): void {
+    const app = this.activeAppointment();
+    if (!app) return;
+
+    this.rescheduleDate.set(app.date); // Default to current date
+    this.selectedSlot.set('');
+    this.availableSlots.set([]);
+    this.isRescheduleOpen.set(true);
+    this.loadAvailableSlots(); // Pre-fetch slots for current date
+  }
+
+  /**
+   * Closes the rescheduling modal.
+   */
+  closeReschedule(): void {
+    this.isRescheduleOpen.set(false);
+    this.selectedSlot.set('');
+    this.availableSlots.set([]);
+  }
+
+  /**
+   * Triggers slot reload when date is changed.
+   */
+  onRescheduleDateChange(newDate: string): void {
+    this.rescheduleDate.set(newDate);
+    this.loadAvailableSlots();
+  }
+
+  /**
+   * Fetches available 15-minute slots for the assigned doctor, date, and service.
+   */
+  loadAvailableSlots(): void {
+    const app = this.activeAppointment();
+    const date = this.rescheduleDate();
+    if (!app || !date) return;
+
+    this.isFetchingSlots.set(true);
+    this.availableSlots.set([]);
+    this.selectedSlot.set('');
+
+    this.doctorService.getSlots(app.doctorId, date, app.serviceId).subscribe({
+      next: (res) => {
+        this.availableSlots.set(res.slots || []);
+        this.isFetchingSlots.set(false);
+      },
+      error: (err) => {
+        this.isFetchingSlots.set(false);
+        const msg = err.error?.message || err.message || 'Failed to fetch available specialist slots.';
+        this.toastService.show(msg, 'error');
+      }
+    });
+  }
+
+  /**
+   * Confirms and saves the rescheduled appointment time slot.
+   */
+  onConfirmReschedule(): void {
+    const app = this.activeAppointment();
+    const date = this.rescheduleDate();
+    const slot = this.selectedSlot();
+    if (!app || !date || !slot) return;
+
+    this.isActionLoading.set(true);
+    this.appointmentService.reschedule(app.id, { date, startTime: slot }).subscribe({
+      next: () => {
+        this.toastService.show('Appointment rescheduled successfully.', 'success');
+        this.closeReschedule();
+        this.loadAppointments(); // Reload background schedule
+
+        // Reload the details view to show updated time
+        this.appointmentService.getById(app.id).subscribe({
+          next: (updated) => {
+            this.activeAppointment.set(updated);
+            this.isActionLoading.set(false);
+          },
+          error: () => {
+            this.isActionLoading.set(false);
+          }
+        });
+      },
+      error: (err) => {
+        this.isActionLoading.set(false);
+        const msg = err.error?.message || err.message || 'Failed to reschedule appointment.';
+        this.toastService.show(msg, 'error');
+      }
+    });
   }
 }
