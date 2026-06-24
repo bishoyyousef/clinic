@@ -1,0 +1,305 @@
+﻿{
+    "/api/admin/staff":  {
+                             "get":  {
+                                         "tags":  "Admin",
+                                         "responses":  "@{200=}"
+                                     }
+                         },
+    "/api/admin/doctors":  {
+                               "post":  {
+                                            "tags":  "Admin",
+                                            "requestBody":  "@{content=}",
+                                            "responses":  "@{200=}"
+                                        }
+                           },
+    "/api/admin/receptionists":  {
+                                     "post":  {
+                                                  "tags":  "Admin",
+                                                  "requestBody":  "@{content=}",
+                                                  "responses":  "@{200=}"
+                                              }
+                                 },
+    "/api/admin/staff/{id}":  {
+                                  "put":  {
+                                              "tags":  "Admin",
+                                              "parameters":  "",
+                                              "requestBody":  "@{content=}",
+                                              "responses":  "@{200=}"
+                                          }
+                              },
+    "/api/admin/staff/{id}/active":  {
+                                         "put":  {
+                                                     "tags":  "Admin",
+                                                     "parameters":  "",
+                                                     "requestBody":  "@{content=}",
+                                                     "responses":  "@{200=}"
+                                                 }
+                                     },
+    "/api/admin/reports":  {
+                               "get":  {
+                                           "tags":  "Admin",
+                                           "responses":  "@{200=}"
+                                       }
+                           },
+    "/api/appointments":  {
+                              "post":  {
+                                           "tags":  "Appointments",
+                                           "requestBody":  "@{content=}",
+                                           "responses":  "@{200=}"
+                                       },
+                              "get":  {
+                                          "tags":  "Appointments",
+                                          "parameters":  "  ",
+                                          "responses":  "@{200=}"
+                                      }
+                          },
+    "/api/me/appointments":  {
+                                 "get":  {
+                                             "tags":  "Appointments",
+                                             "parameters":  " ",
+                                             "responses":  "@{200=}"
+                                         }
+                             },
+    "/api/me/prescriptions":  {
+                                  "get":  {
+                                              "tags":  "Appointments",
+                                              "responses":  "@{200=}"
+                                          }
+                              },
+    "/api/appointments/{id}":  {
+                                   "get":  {
+                                               "tags":  "Appointments",
+                                               "parameters":  "",
+                                               "responses":  "@{200=}"
+                                           }
+                               },
+    "/api/appointments/{id}/cancel":  {
+                                          "put":  {
+                                                      "tags":  "Appointments",
+                                                      "parameters":  "",
+                                                      "responses":  "@{200=}"
+                                                  }
+                                      },
+    "/api/appointments/walk-in":  {
+                                      "post":  {
+                                                   "tags":  "Appointments",
+                                                   "requestBody":  "@{content=}",
+                                                   "responses":  "@{200=}"
+                                               }
+                                  },
+    "/api/appointments/{id}/reschedule":  {
+                                              "put":  {
+                                                          "tags":  "Appointments",
+                                                          "parameters":  "",
+                                                          "requestBody":  "@{content=}",
+                                                          "responses":  "@{200=}"
+                                                      }
+                                          },
+    "/api/appointments/{id}/arrived":  {
+                                           "put":  {
+                                                       "tags":  "Appointments",
+                                                       "parameters":  "",
+                                                       "responses":  "@{200=}"
+                                                   }
+                                       },
+    "/api/appointments/{id}/no-show":  {
+                                           "put":  {
+                                                       "tags":  "Appointments",
+                                                       "parameters":  "",
+                                                       "responses":  "@{200=}"
+                                                   }
+                                       },
+    "/api/appointments/{id}/cash-paid":  {
+                                             "put":  {
+                                                         "tags":  "Appointments",
+                                                         "parameters":  "",
+                                                         "responses":  "@{200=}"
+                                                     }
+                                         },
+    "/api/appointments/{id}/complete":  {
+                                            "put":  {
+                                                        "tags":  "Appointments",
+                                                        "parameters":  "",
+                                                        "responses":  "@{200=}"
+                                                    }
+                                        },
+    "/api/auth/register":  {
+                               "post":  {
+                                            "tags":  "Auth",
+                                            "requestBody":  "@{content=}",
+                                            "responses":  "@{200=}"
+                                        }
+                           },
+    "/api/auth/login":  {
+                            "post":  {
+                                         "tags":  "Auth",
+                                         "requestBody":  "@{content=}",
+                                         "responses":  "@{200=}"
+                                     }
+                        },
+    "/api/auth/me":  {
+                         "get":  {
+                                     "tags":  "Auth",
+                                     "responses":  "@{200=}"
+                                 }
+                     },
+    "/api/auth/profile":  {
+                              "put":  {
+                                          "tags":  "Auth",
+                                          "requestBody":  "@{content=}",
+                                          "responses":  "@{200=}"
+                                      }
+                          },
+    "/api/auth/password":  {
+                               "put":  {
+                                           "tags":  "Auth",
+                                           "requestBody":  "@{content=}",
+                                           "responses":  "@{200=}"
+                                       }
+                           },
+    "/health":  {
+                    "get":  {
+                                "tags":  "Clinic.Api",
+                                "responses":  "@{200=}"
+                            }
+                },
+    "/api/dashboard/stats":  {
+                                 "get":  {
+                                             "tags":  "Dashboard",
+                                             "responses":  "@{200=}"
+                                         }
+                             },
+    "/api/doctor/schedule":  {
+                                 "get":  {
+                                             "tags":  "DoctorClinical",
+                                             "parameters":  "",
+                                             "responses":  "@{200=}"
+                                         }
+                             },
+    "/api/appointments/{id}/visit":  {
+                                         "post":  {
+                                                      "tags":  "DoctorClinical",
+                                                      "parameters":  "",
+                                                      "requestBody":  "@{content=}",
+                                                      "responses":  "@{200=}"
+                                                  }
+                                     },
+    "/api/visits/{id}":  {
+                             "put":  {
+                                         "tags":  "DoctorClinical",
+                                         "parameters":  "",
+                                         "requestBody":  "@{content=}",
+                                         "responses":  "@{200=}"
+                                     }
+                         },
+    "/api/patients/{id}/history":  {
+                                       "get":  {
+                                                   "tags":  "DoctorClinical",
+                                                   "parameters":  "",
+                                                   "responses":  "@{200=}"
+                                               }
+                                   },
+    "/api/doctors":  {
+                         "get":  {
+                                     "tags":  "Doctors",
+                                     "parameters":  "      ",
+                                     "responses":  "@{200=}"
+                                 }
+                     },
+    "/api/doctors/{id}":  {
+                              "get":  {
+                                          "tags":  "Doctors",
+                                          "parameters":  "",
+                                          "responses":  "@{200=}"
+                                      }
+                          },
+    "/api/doctors/{id}/slots":  {
+                                    "get":  {
+                                                "tags":  "Doctors",
+                                                "parameters":  "  ",
+                                                "responses":  "@{200=}"
+                                            }
+                                },
+    "/api/doctors/{id}/availability":  {
+                                           "get":  {
+                                                       "tags":  "Doctors",
+                                                       "parameters":  "",
+                                                       "responses":  "@{200=}"
+                                                   },
+                                           "put":  {
+                                                       "tags":  "Doctors",
+                                                       "parameters":  "",
+                                                       "requestBody":  "@{content=}",
+                                                       "responses":  "@{200=}"
+                                                   }
+                                       },
+    "/api/doctors/{id}/blocked-dates":  {
+                                            "get":  {
+                                                        "tags":  "Doctors",
+                                                        "parameters":  "",
+                                                        "responses":  "@{200=}"
+                                                    },
+                                            "post":  {
+                                                         "tags":  "Doctors",
+                                                         "parameters":  "",
+                                                         "requestBody":  "@{content=}",
+                                                         "responses":  "@{200=}"
+                                                     }
+                                        },
+    "/api/doctors/{id}/blocked-dates/{date}":  {
+                                                   "delete":  {
+                                                                  "tags":  "Doctors",
+                                                                  "parameters":  " ",
+                                                                  "responses":  "@{200=}"
+                                                              }
+                                               },
+    "/api/patients":  {
+                          "post":  {
+                                       "tags":  "Patients",
+                                       "requestBody":  "@{content=}",
+                                       "responses":  "@{200=}"
+                                   },
+                          "get":  {
+                                      "tags":  "Patients",
+                                      "parameters":  "",
+                                      "responses":  "@{200=}"
+                                  }
+                      },
+    "/api/payments/webhook":  {
+                                  "post":  {
+                                               "tags":  "Payments",
+                                               "responses":  "@{200=}"
+                                           }
+                              },
+    "/api/payments/mock/pay":  {
+                                   "post":  {
+                                                "tags":  "Payments",
+                                                "requestBody":  "@{content=}",
+                                                "responses":  "@{200=}"
+                                            }
+                               },
+    "/api/services":  {
+                          "get":  {
+                                      "tags":  "Services",
+                                      "responses":  "@{200=}"
+                                  },
+                          "post":  {
+                                       "tags":  "Services",
+                                       "requestBody":  "@{content=}",
+                                       "responses":  "@{200=}"
+                                   }
+                      },
+    "/api/services/{id}":  {
+                               "put":  {
+                                           "tags":  "Services",
+                                           "parameters":  "",
+                                           "requestBody":  "@{content=}",
+                                           "responses":  "@{200=}"
+                                       },
+                               "delete":  {
+                                              "tags":  "Services",
+                                              "parameters":  "",
+                                              "responses":  "@{200=}"
+                                          }
+                           }
+}
