@@ -1,13 +1,24 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-appointments',
   standalone: true,
-  template: `
-    <div>
-      <h2>Appointments & Calendar</h2>
-      <p style="color: var(--text-muted); margin-top: 0.5rem;">Placeholder for daily appointment schedule and bookings.</p>
-    </div>
-  `
+  imports: [
+    CommonModule
+  ],
+  templateUrl: './appointments.component.html',
+  styleUrl: './appointments.component.css'
 })
-export class AppointmentsComponent {}
+export class AppointmentsComponent {
+  // Layout View Control
+  activeView = signal<'calendar' | 'list'>('calendar');
+
+  /**
+   * Switches between Calendar and List views.
+   * @param view Target view type
+   */
+  setView(view: 'calendar' | 'list'): void {
+    this.activeView.set(view);
+  }
+}
