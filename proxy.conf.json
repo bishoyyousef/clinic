@@ -1,0 +1,8 @@
+{
+  "/api": {
+    "target": "https://api.clinic.kaessam.codes",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}
