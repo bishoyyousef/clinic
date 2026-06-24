@@ -44,6 +44,14 @@ export const routes: Routes = [
           )
       },
       {
+        path: 'availability',
+        canActivate: [roleGuard(['Admin', 'Receptionist'])],
+        loadComponent: () =>
+          import('./features/doctors/doctors.component').then(
+            (m) => m.DoctorsComponent
+          )
+      },
+      {
         path: 'services',
         canActivate: [roleGuard(['Admin', 'Receptionist'])],
         loadComponent: () =>
@@ -53,6 +61,14 @@ export const routes: Routes = [
       },
       {
         path: 'appointments',
+        canActivate: [roleGuard(['Admin', 'Receptionist'])],
+        loadComponent: () =>
+          import('./features/appointments/appointments.component').then(
+            (m) => m.AppointmentsComponent
+          )
+      },
+      {
+        path: 'calendar',
         canActivate: [roleGuard(['Admin', 'Receptionist'])],
         loadComponent: () =>
           import('./features/appointments/appointments.component').then(
