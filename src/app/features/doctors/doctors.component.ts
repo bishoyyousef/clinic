@@ -6,7 +6,7 @@ import { DoctorService } from '../../core/services/doctor.service';
 import { AdminService } from '../../core/services/admin.service';
 import { ToastService } from '../../core/services/toast.service';
 import { StaffDto, CreateDoctorRequest, UpdateStaffRequest } from '../../core/models/admin.model';
-import { DoctorDetailsDto, AvailabilityWindowDto } from '../../core/models/doctor.model';
+import { DoctorDetailsDto, AvailabilityWindowDto, BlockedDateDto } from '../../core/models/doctor.model';
 import { TableColumn, DataTableComponent } from '../../shared/components/data-table/data-table.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
@@ -156,42 +156,200 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
             </div>
           </div>
 
-          <!-- Right side: Weekly availability schedule -->
-          <div class="availability-card">
-            <div class="availability-header">
-              <div>
-                <h3 class="card-title">Weekly Operational Availability</h3>
-                <p class="card-subtitle">View and configure the active weekly time windows for patient bookings</p>
+          <!-- Right side: Weekly availability schedule & extensions -->
+          <div class="right-column-layout">
+            <!-- Weekly availability schedule card -->
+            <div class="availability-card">
+              <div class="availability-header">
+                <div>
+                  <h3 class="card-title">Weekly Operational Availability</h3>
+                  <p class="card-subtitle">View and configure the active weekly time windows for patient bookings</p>
+                </div>
+                <app-button (click)="openAvailabilityModal()">
+                  <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" style="margin-right: 6px;">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                  Configure Schedule
+                </app-button>
               </div>
-              <app-button (click)="openAvailabilityModal()">
-                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" style="margin-right: 6px;">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                  <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                </svg>
-                Configure Schedule
-              </app-button>
+
+              <!-- Availability List Grid -->
+              <div class="schedule-grid">
+                <div class="schedule-row" *ngFor="let day of weekDays">
+                  <span class="day-name">{{ day.label }}</span>
+                  
+                  <div class="day-hours">
+                    <ng-container *ngIf="getDayWindows(day.value).length > 0; else offDayTmpl">
+                      <div class="hours-pills">
+                        <div class="hours-pill" *ngFor="let window of getDayWindows(day.value)">
+                          <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" class="clock-icon">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                          </svg>
+                          <span>{{ window.startTime }} - {{ window.endTime }}</span>
+                        </div>
+                      </div>
+                    </ng-container>
+                    <ng-template #offDayTmpl>
+                      <span class="off-label">Off Duty</span>
+                    </ng-template>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <!-- Availability List Grid -->
-            <div class="schedule-grid">
-              <div class="schedule-row" *ngFor="let day of weekDays">
-                <span class="day-name">{{ day.label }}</span>
-                
-                <div class="day-hours">
-                  <ng-container *ngIf="getDayWindows(day.value).length > 0; else offDayTmpl">
-                    <div class="hours-pills">
-                      <div class="hours-pill" *ngFor="let window of getDayWindows(day.value)">
-                        <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" class="clock-icon">
-                          <circle cx="12" cy="12" r="10"></circle>
-                          <polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                        <span>{{ window.startTime }} - {{ window.endTime }}</span>
+            <!-- Extensions: Blocked Dates & Slots Checker -->
+            <div class="extensions-grid">
+              <!-- Blocked Dates Card -->
+              <div class="extension-card blocked-dates-card">
+                <div class="extension-header">
+                  <div>
+                    <h3 class="card-title">Blocked Calendar Dates</h3>
+                    <p class="card-subtitle">Temporarily block dates for vacations or holidays</p>
+                  </div>
+                </div>
+
+                <div class="blocked-dates-content">
+                  <!-- Block Date Form -->
+                  <div class="block-date-form">
+                    <div class="input-wrapper">
+                      <input 
+                        type="date" 
+                        [min]="getTodayDateString()"
+                        [value]="newBlockDate()" 
+                        (input)="newBlockDate.set($any($event.target).value)"
+                        class="date-input"
+                      />
+                    </div>
+                    <app-button 
+                      [disabled]="!newBlockDate() || isBlockedDatesLoading()" 
+                      [loading]="isBlockedDatesLoading()"
+                      (click)="onBlockDate()"
+                    >
+                      Block Date
+                    </app-button>
+                  </div>
+
+                  <!-- Blocked Dates List -->
+                  <div class="blocked-dates-list-wrapper">
+                    <div class="loading-state-sm" *ngIf="isBlockedDatesLoading() && blockedDates().length === 0">
+                      <app-loading-spinner size="sm"></app-loading-spinner>
+                    </div>
+
+                    <ul class="blocked-dates-list" *ngIf="blockedDates().length > 0">
+                      <li class="blocked-date-item" *ngFor="let block of blockedDates()">
+                        <div class="blocked-date-info">
+                          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" class="calendar-icon">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                          </svg>
+                          <span class="blocked-date-val">{{ block.date | date:'mediumDate' }}</span>
+                          <span class="blocked-reason-badge" *ngIf="block.reason">{{ block.reason }}</span>
+                        </div>
+                        <button 
+                          class="unblock-btn" 
+                          (click)="onUnblockDate(block)" 
+                          title="Unblock date"
+                          [disabled]="isBlockedDatesLoading()"
+                        >
+                          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                          </svg>
+                        </button>
+                      </li>
+                    </ul>
+
+                    <p class="no-blocked-dates" *ngIf="blockedDates().length === 0 && !isBlockedDatesLoading()">
+                      No blocked dates scheduled.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Live Slots Checker Card -->
+              <div class="extension-card slots-checker-card">
+                <div class="extension-header">
+                  <div>
+                    <h3 class="card-title">Live Slots Checker</h3>
+                    <p class="card-subtitle">Query real-time 15-minute slot availability</p>
+                  </div>
+                </div>
+
+                <div class="slots-checker-content">
+                  <!-- Checker Controls -->
+                  <div class="slots-checker-controls">
+                    <div class="form-group">
+                      <label>Select Service</label>
+                      <div class="input-wrapper">
+                        <select 
+                          [value]="slotCheckServiceId() || ''" 
+                          (change)="slotCheckServiceId.set(+$any($event.target).value); loadCheckedSlots()"
+                        >
+                          <option value="" disabled selected>Select a service...</option>
+                          <option *ngFor="let s of doctorDetails()?.services" [value]="s.id">
+                            {{ s.name }} ({{ s.durationMinutes }}m)
+                          </option>
+                        </select>
                       </div>
                     </div>
-                  </ng-container>
-                  <ng-template #offDayTmpl>
-                    <span class="off-label">Off Duty</span>
-                  </ng-template>
+
+                    <div class="form-group">
+                      <label>Select Date</label>
+                      <div class="input-wrapper">
+                        <input 
+                          type="date" 
+                          [value]="slotCheckDate()" 
+                          (change)="slotCheckDate.set($any($event.target).value); loadCheckedSlots()"
+                          class="date-input"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Slots Display Grid -->
+                  <div class="slots-display-area">
+                    <div class="loading-state-sm" *ngIf="isCheckingSlots()">
+                      <app-loading-spinner size="sm"></app-loading-spinner>
+                      <p class="loading-text-sm">Querying available slots...</p>
+                    </div>
+
+                    <ng-container *ngIf="!isCheckingSlots()">
+                      <!-- If slotCheckServiceId is not selected -->
+                      <div class="slots-prompt" *ngIf="!slotCheckServiceId()">
+                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" class="prompt-icon">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <line x1="12" y1="8" x2="12" y2="12"></line>
+                          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <span>Please select a clinic service to query slot availability.</span>
+                      </div>
+
+                      <!-- Slot pills -->
+                      <div class="slots-grid" *ngIf="slotCheckServiceId() && checkedSlots().length > 0">
+                        <div class="slot-pill" *ngFor="let slot of checkedSlots()">
+                          <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" class="pill-icon">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                          </svg>
+                          <span>{{ slot }}</span>
+                        </div>
+                      </div>
+
+                      <!-- Empty slots state -->
+                      <div class="no-slots-warning" *ngIf="slotCheckServiceId() && checkedSlots().length === 0">
+                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" class="warning-icon">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <line x1="12" y1="8" x2="12" y2="12"></line>
+                          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <span>No available booking slots on this date.</span>
+                      </div>
+                    </ng-container>
+                  </div>
                 </div>
               </div>
             </div>
@@ -376,10 +534,19 @@ export class DoctorsComponent implements OnInit {
   selectedDoctor = signal<StaffDto | null>(null);
   doctorDetails = signal<DoctorDetailsDto | null>(null);
   doctorAvailability = signal<AvailabilityWindowDto[]>([]);
+  blockedDates = signal<BlockedDateDto[]>([]);
 
   isLoading = signal(true);
   isDetailsLoading = signal(false);
   isSubmitting = signal(false);
+
+  // Availability Extensions State Signals
+  isBlockedDatesLoading = signal(false);
+  newBlockDate = signal('');
+  slotCheckDate = signal('');
+  slotCheckServiceId = signal<number | null>(null);
+  checkedSlots = signal<string[]>([]);
+  isCheckingSlots = signal(false);
 
   // Temporary credentials popup storage
   tempCredentials = signal<{ email: string, tempPassword: string } | null>(null);
@@ -480,16 +647,29 @@ export class DoctorsComponent implements OnInit {
     this.isDetailsLoading.set(true);
     this.doctorDetails.set(null);
     this.doctorAvailability.set([]);
+    this.blockedDates.set([]);
+    this.newBlockDate.set('');
+    this.slotCheckDate.set(this.getTodayDateString());
+    this.slotCheckServiceId.set(null);
+    this.checkedSlots.set([]);
 
-    // Fetch doctor DTO and availability schedule in parallel
+    // Fetch doctor DTO, availability schedule, and blocked dates in parallel
     forkJoin({
       details: this.doctorService.getById(doctor.id),
-      availability: this.doctorService.getAvailability(doctor.id)
+      availability: this.doctorService.getAvailability(doctor.id),
+      blockedDates: this.doctorService.getBlockedDates(doctor.id)
     }).subscribe({
       next: (res) => {
         this.doctorDetails.set(res.details);
         this.doctorAvailability.set(res.availability || []);
+        this.blockedDates.set(res.blockedDates || []);
         this.isDetailsLoading.set(false);
+
+        // Auto-select first service if available to check slots right away
+        if (res.details.services && res.details.services.length > 0) {
+          this.slotCheckServiceId.set(res.details.services[0].id);
+          this.loadCheckedSlots();
+        }
       },
       error: (err) => {
         this.isDetailsLoading.set(false);
@@ -504,6 +684,11 @@ export class DoctorsComponent implements OnInit {
     this.selectedDoctor.set(null);
     this.doctorDetails.set(null);
     this.doctorAvailability.set([]);
+    this.blockedDates.set([]);
+    this.newBlockDate.set('');
+    this.slotCheckDate.set('');
+    this.slotCheckServiceId.set(null);
+    this.checkedSlots.set([]);
   }
 
   /**
@@ -725,6 +910,85 @@ export class DoctorsComponent implements OnInit {
       error: (err) => {
         this.isSubmitting.set(false);
         const msg = err.error?.message || err.message || 'Failed to update schedule.';
+        this.toastService.show(msg, 'error');
+      }
+    });
+  }
+
+  // ==========================================
+  // AVAILABILITY EXTENSIONS ACTIONS
+  // ==========================================
+
+  getTodayDateString(): string {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  onBlockDate(): void {
+    const doc = this.selectedDoctor();
+    const date = this.newBlockDate();
+    
+    if (!doc || !date) return;
+
+    this.isBlockedDatesLoading.set(true);
+    this.doctorService.blockDate(doc.id, { date }).subscribe({
+      next: (blocked) => {
+        this.blockedDates.update(list => [...list, blocked].sort((a, b) => a.date.localeCompare(b.date)));
+        this.newBlockDate.set('');
+        this.isBlockedDatesLoading.set(false);
+        this.toastService.show(`Date ${date} blocked successfully.`, 'success');
+      },
+      error: (err) => {
+        this.isBlockedDatesLoading.set(false);
+        const msg = err.error?.message || err.message || 'Failed to block date.';
+        this.toastService.show(msg, 'error');
+      }
+    });
+  }
+
+  onUnblockDate(blocked: BlockedDateDto): void {
+    const doc = this.selectedDoctor();
+    if (!doc) return;
+
+    if (confirm(`Are you sure you want to unblock Dr. ${doc.name} on ${blocked.date}?`)) {
+      this.isBlockedDatesLoading.set(true);
+      this.doctorService.unblockDate(doc.id, blocked.date).subscribe({
+        next: () => {
+          this.blockedDates.update(list => list.filter(d => d.date !== blocked.date));
+          this.isBlockedDatesLoading.set(false);
+          this.toastService.show(`Date ${blocked.date} unblocked successfully.`, 'success');
+        },
+        error: (err) => {
+          this.isBlockedDatesLoading.set(false);
+          const msg = err.error?.message || err.message || 'Failed to unblock date.';
+          this.toastService.show(msg, 'error');
+        }
+      });
+    }
+  }
+
+  loadCheckedSlots(): void {
+    const doc = this.selectedDoctor();
+    const serviceId = this.slotCheckServiceId();
+    const date = this.slotCheckDate();
+    
+    if (!doc || !serviceId || !date) {
+      this.checkedSlots.set([]);
+      return;
+    }
+
+    this.isCheckingSlots.set(true);
+    this.doctorService.getSlots(doc.id, date, serviceId).subscribe({
+      next: (res) => {
+        this.checkedSlots.set(res.slots || []);
+        this.isCheckingSlots.set(false);
+      },
+      error: (err) => {
+        this.isCheckingSlots.set(false);
+        const msg = err.error?.message || err.message || 'Failed to check slots.';
         this.toastService.show(msg, 'error');
       }
     });

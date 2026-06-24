@@ -1,0 +1,215 @@
+.services-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s6);
+  animation: fadeIn var(--dur-lg) var(--ease);
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s4);
+}
+
+.page-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.page-subtitle {
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+  margin-top: var(--s1);
+}
+
+.table-card {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s12) 0;
+  gap: var(--s4);
+}
+
+.loading-text {
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+}
+
+.empty-directory {
+  margin-top: var(--s4);
+}
+
+/* Custom cell styling */
+.actions-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+}
+
+.duration-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: var(--s1) var(--s2.5);
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--r-full);
+}
+
+.duration-icon {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.specialist-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.specialist-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--r-full);
+  background-color: var(--accent-soft);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.text-danger {
+  color: var(--danger) !important;
+}
+
+.text-danger:hover {
+  background-color: var(--danger-soft) !important;
+}
+
+/* Modal Form styling */
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+  padding: var(--s2) 0;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s1.5);
+}
+
+.form-group label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.required-asterisk {
+  color: var(--danger);
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-wrapper input,
+.input-wrapper select {
+  width: 100%;
+  height: 42px;
+  padding: 0 var(--s4);
+  font-size: 0.9375rem;
+  background-color: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  transition: all var(--dur-sm) var(--ease);
+}
+
+.input-wrapper input:focus,
+.input-wrapper select:focus {
+  outline: none;
+  border-color: var(--accent);
+  background-color: var(--surface);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.input-wrapper.error input,
+.input-wrapper.error select {
+  border-color: var(--danger);
+  background-color: var(--danger-soft);
+}
+
+.input-wrapper.error input:focus,
+.input-wrapper.error select:focus {
+  box-shadow: 0 0 0 3px var(--danger-soft);
+}
+
+.input-suffix {
+  position: absolute;
+  right: var(--s4);
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  pointer-events: none;
+}
+
+.suffix-padding input {
+  padding-right: var(--s12);
+}
+
+.form-group select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+  background-repeat: no-repeat;
+  background-position: right var(--s4) center;
+}
+
+.form-group select:disabled {
+  background-color: var(--border);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s4);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
