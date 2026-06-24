@@ -1,0 +1,285 @@
+.walk-in-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s5);
+  animation: fadeIn 0.35s ease-out;
+}
+
+/* Stepper Progress Bar */
+.stepper-progress-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--s4) var(--s6);
+  margin-bottom: var(--s2);
+}
+
+.step-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2);
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  flex-shrink: 0;
+  width: 100px;
+}
+
+.step-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 2px solid var(--border);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  transition: all 0.25s ease;
+}
+
+.step-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: all 0.25s ease;
+}
+
+/* Connective Stepper Line */
+.step-line {
+  flex-grow: 1;
+  height: 2px;
+  background: var(--border);
+  margin: 0 -15px;
+  margin-bottom: 22px; /* aligns with step circles */
+  position: relative;
+  z-index: 1;
+  transition: all 0.25s ease;
+}
+
+.step-line.filled {
+  background: var(--accent);
+}
+
+/* Active and Completed Stepper States */
+.step-node.active .step-circle {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-alpha);
+  transform: scale(1.05);
+}
+
+.step-node.active .step-label {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.step-node.completed .step-circle {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--white || #ffffff);
+}
+
+.step-node.completed .step-label {
+  color: var(--text-muted);
+}
+
+/* Wizard Active Panel */
+.wizard-step-panel {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--s6);
+  min-height: 380px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+}
+
+.step-panel-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 var(--s1) 0;
+}
+
+.step-panel-desc {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin: 0 0 var(--s5) 0;
+}
+
+/* Selection Lists and Items */
+.selection-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+.selection-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--s4) var(--s5);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.selection-item:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-hover);
+  transform: translateY(-1px);
+}
+
+.selection-item.selected {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.selection-item-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.selection-item-subtitle {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin-top: var(--s1);
+}
+
+.selection-indicator {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.selection-item.selected .selection-indicator {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--white || #ffffff);
+}
+
+.service-price {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Slots Grid and Pills */
+.slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: var(--s3);
+}
+
+.slot-pill {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--s3) var(--s2);
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.slot-pill:hover:not(.selected) {
+  background: var(--surface-hover);
+  border-color: var(--border-hover);
+}
+
+.slot-pill.selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--white || #ffffff);
+  box-shadow: 0 4px 8px var(--accent-alpha);
+  transform: translateY(-1px);
+}
+
+/* Step 5 Summary Card */
+.summary-details-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--s5) var(--s6);
+}
+
+.summary-section {
+  padding: var(--s4) 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+.summary-section-header {
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  font-weight: 700;
+  margin: 0 0 var(--s1) 0;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9375rem;
+}
+
+.summary-lbl {
+  color: var(--text-muted);
+}
+
+.summary-val {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Footer Stepper Controls */
+.stepper-footer-actions {
+  display: flex;
+  align-items: center;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--s4) var(--s5);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Responsive Overrides */
+@media (max-width: 768px) {
+  .stepper-progress-bar {
+    padding: var(--s4);
+  }
+  .step-node {
+    width: 70px;
+  }
+  .step-label {
+    display: none;
+  }
+  .step-line {
+    margin-bottom: 0;
+  }
+}

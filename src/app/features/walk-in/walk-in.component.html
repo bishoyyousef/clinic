@@ -1,0 +1,422 @@
+<div class="walk-in-container">
+  <!-- Page Header (uses global page-header, page-title, page-subtitle) -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Walk-in Booking Wizard</h1>
+      <p class="page-subtitle">Register on-the-spot clinic appointments and check in patients at the front desk</p>
+    </div>
+    <app-button variant="secondary" (click)="cancelWizard()">
+      Cancel & Exit
+    </app-button>
+  </div>
+
+  <!-- Stepper Progress Tracker -->
+  <div class="stepper-progress-bar">
+    <!-- Step 1 Node -->
+    <div class="step-node" [class.active]="activeStep() === 1" [class.completed]="activeStep() > 1">
+      <div class="step-circle">
+        <span *ngIf="activeStep() <= 1">1</span>
+        <svg *ngIf="activeStep() > 1" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <span class="step-label">Patient Selection</span>
+    </div>
+    <div class="step-line" [class.filled]="activeStep() > 1"></div>
+
+    <!-- Step 2 Node -->
+    <div class="step-node" [class.active]="activeStep() === 2" [class.completed]="activeStep() > 2">
+      <div class="step-circle">
+        <span *ngIf="activeStep() <= 2">2</span>
+        <svg *ngIf="activeStep() > 2" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <span class="step-label">Select Specialist</span>
+    </div>
+    <div class="step-line" [class.filled]="activeStep() > 2"></div>
+
+    <!-- Step 3 Node -->
+    <div class="step-node" [class.active]="activeStep() === 3" [class.completed]="activeStep() > 3">
+      <div class="step-circle">
+        <span *ngIf="activeStep() <= 3">3</span>
+        <svg *ngIf="activeStep() > 3" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <span class="step-label">Choose Service</span>
+    </div>
+    <div class="step-line" [class.filled]="activeStep() > 3"></div>
+
+    <!-- Step 4 Node -->
+    <div class="step-node" [class.active]="activeStep() === 4" [class.completed]="activeStep() > 4">
+      <div class="step-circle">
+        <span *ngIf="activeStep() <= 4">4</span>
+        <svg *ngIf="activeStep() > 4" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <span class="step-label">Select Time Slot</span>
+    </div>
+    <div class="step-line" [class.filled]="activeStep() > 4"></div>
+
+    <!-- Step 5 Node -->
+    <div class="step-node" [class.active]="activeStep() === 5" [class.completed]="activeStep() > 5">
+      <div class="step-circle">
+        <span>5</span>
+      </div>
+      <span class="step-label">Review & Confirm</span>
+    </div>
+  </div>
+
+  <!-- Wizard Active Step Body Panel -->
+  <div class="wizard-step-panel">
+    
+    <!-- STEP 1: PATIENT SELECTION -->
+    <div *ngIf="activeStep() === 1">
+      <h3 class="step-panel-title">Step 1: Patient Selection</h3>
+      <p class="step-panel-desc">Search active patient records in the system database or register a new medical file</p>
+
+      <div class="view-tabs" style="margin-top: var(--s4); margin-bottom: var(--s4);">
+        <button 
+          type="button" 
+          class="tab-btn" 
+          [class.active]="patientMode() === 'existing'"
+          (click)="patientMode.set('existing')">
+          Existing Patient File
+        </button>
+        <button 
+          type="button" 
+          class="tab-btn" 
+          [class.active]="patientMode() === 'new'"
+          (click)="patientMode.set('new')">
+          Open New Patient File
+        </button>
+      </div>
+
+      <!-- Tab A: Search Existing Patient -->
+      <div *ngIf="patientMode() === 'existing'" class="step-inner-form">
+        <div class="form-group">
+          <label for="patient-search-input">Search Patients</label>
+          <input 
+            id="patient-search-input"
+            type="text" 
+            class="filter-control" 
+            placeholder="Type name or phone number..."
+            [ngModel]="searchQuery()"
+            (ngModelChange)="onSearchQueryChange($event)"
+          />
+        </div>
+
+        <!-- Searching Loading Spinner -->
+        <div class="loading-slots-state" *ngIf="isSearchingPatients()" style="display: flex; align-items: center; gap: var(--s2); padding: var(--s3) 0;">
+          <app-loading-spinner size="sm"></app-loading-spinner>
+          <span style="font-size: 0.875rem; color: var(--text-muted);">Searching database files...</span>
+        </div>
+
+        <!-- Selection List -->
+        <ng-container *ngIf="!isSearchingPatients()">
+          <div class="selection-list" style="margin-top: var(--s4);" *ngIf="matchingPatients().length > 0">
+            <button
+              type="button"
+              *ngFor="let patient of matchingPatients()"
+              class="selection-item"
+              [class.selected]="selectedPatient()?.id === patient.id"
+              (click)="selectPatient(patient)"
+            >
+              <div style="text-align: left;">
+                <div class="selection-item-title">{{ patient.name }}</div>
+                <div class="selection-item-subtitle">Phone: {{ patient.phone }} | Email: {{ patient.email }}</div>
+              </div>
+              <div class="selection-indicator">
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </div>
+            </button>
+          </div>
+
+          <!-- Empty search results warning -->
+          <div class="slots-empty-banner" *ngIf="searchQuery().trim() && matchingPatients().length === 0" style="background-color: var(--surface-2); border-color: var(--border); color: var(--text-muted); display: flex; align-items: center; gap: var(--s2); padding: var(--s3); border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 0.875rem;">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" style="flex-shrink: 0;">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span>No matching patient files found in the database. Select "Open New Patient File" to register.</span>
+          </div>
+
+          <!-- Initial Helper Message -->
+          <div style="text-align: center; color: var(--text-muted); font-size: 0.875rem; padding: var(--s6) 0;" *ngIf="!searchQuery().trim()">
+            Type a name or phone number above to search active patient files.
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- Tab B: Register New Patient -->
+      <div *ngIf="patientMode() === 'new'" class="step-inner-form">
+        <div class="form-group">
+          <label for="new-patient-name">Full Name <span class="required-asterisk">*</span></label>
+          <input 
+            id="new-patient-name"
+            type="text" 
+            class="filter-control" 
+            placeholder="Minimum 3 characters"
+            [ngModel]="newPatientName()"
+            (ngModelChange)="newPatientName.set($event)"
+          />
+        </div>
+
+        <div class="form-group" style="margin-top: var(--s3);">
+          <label for="new-patient-phone">Phone Number <span class="required-asterisk">*</span></label>
+          <input 
+            id="new-patient-phone"
+            type="text" 
+            class="filter-control" 
+            placeholder="Minimum 5 digits"
+            [ngModel]="newPatientPhone()"
+            (ngModelChange)="newPatientPhone.set($event)"
+          />
+        </div>
+
+        <div class="form-group" style="margin-top: var(--s3);">
+          <label for="new-patient-email">Email Address (Optional)</label>
+          <input 
+            id="new-patient-email"
+            type="email" 
+            class="filter-control" 
+            placeholder="e.g. patient@gmail.com"
+            [ngModel]="newPatientEmail()"
+            (ngModelChange)="newPatientEmail.set($event)"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: DOCTOR SELECTION -->
+    <div *ngIf="activeStep() === 2">
+      <h3 class="step-panel-title">Step 2: Specialist Selection</h3>
+      <p class="step-panel-desc">Select an active doctor or specialist to conduct the consultation visit</p>
+
+      <div class="selection-list" style="margin-top: var(--s4);">
+        <button
+          type="button"
+          *ngFor="let doc of doctors()"
+          class="selection-item"
+          [class.selected]="selectedDoctor()?.id === doc.id"
+          (click)="selectDoctor(doc)"
+        >
+          <div style="text-align: left;">
+            <div class="selection-item-title">Dr. {{ doc.displayName }}</div>
+            <div class="selection-item-subtitle" style="color: var(--accent); font-weight: 600;">{{ doc.specialization }}</div>
+          </div>
+          <div class="selection-indicator">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+        </button>
+
+        <!-- Fallback if no doctors available -->
+        <div style="text-align: center; color: var(--text-muted); font-size: 0.875rem; padding: var(--s6) 0;" *ngIf="doctors().length === 0">
+          No medical specialists found in the database.
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: SERVICE SELECTION -->
+    <div *ngIf="activeStep() === 3">
+      <h3 class="step-panel-title">Step 3: Consultation Service</h3>
+      <p class="step-panel-desc">Choose the medical service category for billing and slot duration matching</p>
+
+      <div class="selection-list" style="margin-top: var(--s4);">
+        <button
+          type="button"
+          *ngFor="let svc of walkInFilteredServices()"
+          class="selection-item"
+          [class.selected]="selectedService()?.id === svc.id"
+          (click)="selectService(svc)"
+        >
+          <div style="text-align: left;">
+            <div class="selection-item-title">{{ svc.name }}</div>
+            <div class="selection-item-subtitle">Duration: {{ svc.durationMinutes }} mins</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: var(--s4);">
+            <span class="service-price">{{ svc.price | number:'1.0-0' }} EGP</span>
+            <div class="selection-indicator">
+              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+          </div>
+        </button>
+
+        <!-- Fallback if no services offered by the selected doctor -->
+        <div style="text-align: center; color: var(--text-muted); font-size: 0.875rem; padding: var(--s6) 0;" *ngIf="walkInFilteredServices().length === 0">
+          Dr. {{ selectedDoctor()?.displayName }} does not offer any services. Please go back and select another doctor.
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4: SLOT SELECTION -->
+    <div *ngIf="activeStep() === 4">
+      <h3 class="step-panel-title">Step 4: Select Appointment Slot</h3>
+      <p class="step-panel-desc">Select an available date and 15-minute time window for the booking</p>
+
+      <div class="step-inner-form">
+        <div class="form-group">
+          <label for="walkin-date-input">Appointment Date</label>
+          <input 
+            id="walkin-date-input"
+            type="date" 
+            class="filter-control"
+            [min]="minBookingDate"
+            [ngModel]="bookingDate()"
+            (ngModelChange)="onBookingDateChange($event)"
+          />
+        </div>
+
+        <div class="form-group" style="margin-top: var(--s4);">
+          <label>Available Consultation Slots</label>
+          
+          <!-- Loading slots spinner -->
+          <div class="loading-slots-state" *ngIf="isFetchingSlots()" style="display: flex; align-items: center; gap: var(--s2); padding: var(--s3) 0;">
+            <app-loading-spinner size="sm"></app-loading-spinner>
+            <span style="font-size: 0.875rem; color: var(--text-muted);">Fetching available slots for Dr. {{ selectedDoctor()?.displayName }}...</span>
+          </div>
+
+          <ng-container *ngIf="!isFetchingSlots()">
+            <!-- Slots Pill Grid -->
+            <div class="slots-grid" style="margin-top: var(--s2);" *ngIf="availableSlots().length > 0">
+              <button
+                type="button"
+                *ngFor="let slot of availableSlots()"
+                class="slot-pill"
+                [class.selected]="selectedSlot() === slot"
+                (click)="selectSlot(slot)"
+              >
+                {{ slot }}
+              </button>
+            </div>
+
+            <!-- Empty slots warning banner -->
+            <div class="slots-empty-banner" *ngIf="availableSlots().length === 0" style="background-color: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--s3); display: flex; align-items: center; gap: var(--s2); font-size: 0.875rem; color: var(--text-muted); margin-top: var(--s2);">
+              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" style="flex-shrink: 0; color: var(--danger);">
+                <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <span>No available booking slots on this date. Please select another date.</span>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 5: CONFIRMATION & REVIEW -->
+    <div *ngIf="activeStep() === 5">
+      <h3 class="step-panel-title">Step 5: Review & Confirm Walk-in</h3>
+      <p class="step-panel-desc">Verify all appointment parameters before submitting the booking ticket</p>
+
+      <div class="summary-details-card" style="margin-top: var(--s4);">
+        <div class="summary-section">
+          <h4 class="summary-section-header">Patient File Details</h4>
+          <div class="summary-row">
+            <span class="summary-lbl">Patient Category</span>
+            <span class="summary-val" style="text-transform: capitalize;">{{ patientMode() }} Patient</span>
+          </div>
+          <div class="summary-row" *ngIf="patientMode() === 'existing'">
+            <span class="summary-lbl">Name</span>
+            <span class="summary-val">{{ selectedPatient()?.name }}</span>
+          </div>
+          <div class="summary-row" *ngIf="patientMode() === 'existing'">
+            <span class="summary-lbl">File ID</span>
+            <span class="summary-val">#{{ selectedPatient()?.id }}</span>
+          </div>
+          <div class="summary-row" *ngIf="patientMode() === 'new'">
+            <span class="summary-lbl">Full Name</span>
+            <span class="summary-val" style="font-weight: 700;">{{ newPatientName() }}</span>
+          </div>
+          <div class="summary-row" *ngIf="patientMode() === 'new'">
+            <span class="summary-lbl">Phone Number</span>
+            <span class="summary-val">{{ newPatientPhone() }}</span>
+          </div>
+        </div>
+
+        <div class="summary-section">
+          <h4 class="summary-section-header">Consultation Details</h4>
+          <div class="summary-row">
+            <span class="summary-lbl">Attending Specialist</span>
+            <span class="summary-val">Dr. {{ selectedDoctor()?.displayName }} ({{ selectedDoctor()?.specialization }})</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-lbl">Medical Service</span>
+            <span class="summary-val">{{ selectedService()?.name }}</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-lbl">Time Slot</span>
+            <span class="summary-val" style="font-weight: 700; color: var(--accent);">{{ bookingDate() | date:'EEEE, MMMM d, yyyy' }} at {{ selectedSlot() }}</span>
+          </div>
+        </div>
+
+        <div class="summary-section" style="border-bottom: none; padding-bottom: 0;">
+          <h4 class="summary-section-header">Billing & Payment</h4>
+          <div class="summary-row">
+            <span class="summary-lbl">Consultation Fee</span>
+            <span class="summary-val" style="font-weight: 700; font-size: 1.125rem; color: var(--text);">{{ selectedService()?.price | number:'1.0-0' }} EGP</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-lbl">Payment Mode</span>
+            <span class="summary-val">Desk Cash Receipt</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Stepper Footer Navigation Controls -->
+  <div class="stepper-footer-actions">
+    <app-button 
+      variant="secondary" 
+      *ngIf="activeStep() > 1" 
+      [disabled]="isSubmitting()"
+      (click)="prevStep()"
+    >
+      Back
+    </app-button>
+
+    <div style="margin-left: auto; display: flex; gap: var(--s3); align-items: center;">
+      <!-- Action Submitting Loader -->
+      <div style="display: flex; align-items: center; gap: var(--s2); margin-right: var(--s2);" *ngIf="isSubmitting()">
+        <app-loading-spinner size="sm"></app-loading-spinner>
+        <span style="font-size: 0.875rem; color: var(--text-muted);">Registering booking...</span>
+      </div>
+
+      <app-button 
+        variant="secondary" 
+        [disabled]="isSubmitting()"
+        (click)="cancelWizard()"
+      >
+        Cancel
+      </app-button>
+
+      <app-button 
+        variant="primary" 
+        *ngIf="activeStep() < 5"
+        [disabled]="!canContinue()" 
+        (click)="nextStep()"
+      >
+        Continue
+      </app-button>
+
+      <app-button 
+        variant="primary" 
+        *ngIf="activeStep() === 5 && !isSubmitting()"
+        (click)="confirmBooking()"
+      >
+        Confirm & Book
+      </app-button>
+    </div>
+  </div>
+</div>

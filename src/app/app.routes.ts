@@ -60,6 +60,14 @@ export const routes: Routes = [
           )
       },
       {
+        path: 'walk-in',
+        canActivate: [roleGuard(['Admin', 'Receptionist'])],
+        loadComponent: () =>
+          import('./features/walk-in/walk-in.component').then(
+            (m) => m.WalkInComponent
+          )
+      },
+      {
         path: 'settings',
         canActivate: [roleGuard(['Admin', 'Receptionist', 'Doctor'])],
         loadComponent: () =>

@@ -349,5 +349,40 @@ textarea:focus-visible {
   margin-top: var(--s2);
 }
 
+/* Reusable Step Selection List & Items */
+.selection-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2.5);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: var(--s3);
+  background-color: var(--surface-2);
+}
+
+.selection-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--s3.5) var(--s4);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: all var(--dur) var(--ease);
+  width: 100%;
+}
+
+.selection-item:hover {
+  border-color: var(--accent);
+  transform: translateX(4px);
+  box-shadow: var(--shadow-sm);
+}
+
+[dir="rtl"] .selection-item:hover {
+  transform: translateX(-4px);
+}
+
+
 
 

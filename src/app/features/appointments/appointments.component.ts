@@ -1,6 +1,7 @@
 import { Component, OnInit, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { forkJoin, Observable } from 'rxjs';
 import { AppointmentService } from '../../core/services/appointment.service';
 import { DoctorService } from '../../core/services/doctor.service';
@@ -20,6 +21,7 @@ import { ModalComponent } from '../../shared/components/modal/modal.component';
   imports: [
     CommonModule,
     FormsModule,
+    RouterLink,
     DataTableComponent,
     StatusBadgeComponent,
     LoadingSpinnerComponent,
@@ -170,6 +172,8 @@ export class AppointmentsComponent implements OnInit {
       }
     });
   }
+
+
 
   /**
    * Fetches appointments. List view queries single date. Calendar view parallel-queries the week.
