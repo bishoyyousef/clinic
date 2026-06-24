@@ -7,6 +7,63 @@
     </div>
   </div>
 
+  <!-- Filter Toolbar Row -->
+  <div class="filters-row">
+    <!-- Date Filter -->
+    <div class="filter-item">
+      <label for="date-filter">Appointment Date</label>
+      <input 
+        id="date-filter"
+        type="date" 
+        class="filter-control"
+        [ngModel]="filterDate()"
+        (ngModelChange)="filterDate.set($event); onFilterChange()"
+      />
+    </div>
+
+    <!-- Doctor Filter -->
+    <div class="filter-item">
+      <label for="doctor-filter">Doctor / Specialist</label>
+      <select 
+        id="doctor-filter"
+        class="filter-control"
+        [ngModel]="filterDoctorId()"
+        (ngModelChange)="filterDoctorId.set($event); onFilterChange()"
+      >
+        <option value="">All Doctors</option>
+        <option *ngFor="let doc of doctors()" [value]="doc.id">
+          Dr. {{ doc.displayName }} ({{ doc.specialization }})
+        </option>
+      </select>
+    </div>
+
+    <!-- Status Filter -->
+    <div class="filter-item">
+      <label for="status-filter">Appointment Status</label>
+      <select 
+        id="status-filter"
+        class="filter-control"
+        [ngModel]="filterStatus()"
+        (ngModelChange)="filterStatus.set($event); onFilterChange()"
+      >
+        <option *ngFor="let opt of statusOptions" [value]="opt.value">
+          {{ opt.label }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Reset Buttons -->
+    <div class="reset-btn-container">
+      <app-button variant="secondary" (click)="resetFilters()">
+        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" style="margin-right: 6px;">
+          <path d="M23 4v6h-6"></path>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+        Reset Filters
+      </app-button>
+    </div>
+  </div>
+
   <!-- View Toggles/Tabs -->
   <div class="view-tabs">
     <button 
@@ -41,7 +98,7 @@
 
   <!-- View Containers -->
   <div [ngSwitch]="activeView()">
-    <!-- Calendar View Placeholder -->
+    <!-- 1. Calendar View Placeholder -->
     <div *ngSwitchCase="'calendar'" class="view-content-wrapper">
       <div class="placeholder-icon">
         <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2.5" fill="none">
@@ -55,20 +112,67 @@
       <p class="placeholder-desc">Visual schedule showing doctors' booked consultations and time slots. (Coming in Phase 3)</p>
     </div>
 
-    <!-- List View Placeholder -->
-    <div *ngSwitchCase="'list'" class="view-content-wrapper">
-      <div class="placeholder-icon">
-        <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2.5" fill="none">
-          <line x1="8" y1="6" x2="21" y2="6"></line>
-          <line x1="8" y1="12" x2="21" y2="12"></line>
-          <line x1="8" y1="18" x2="21" y2="18"></line>
-          <line x1="3" y1="6" x2="3.01" y2="6"></line>
-          <line x1="3" y1="12" x2="3.01" y2="12"></line>
-          <line x1="3" y1="18" x2="3.01" y2="18"></line>
-        </svg>
+    <!-- 2. Tabular List View -->
+    <div *ngSwitchCase="'list'">
+      <!-- Loading State -->
+      <div class="loading-state" *ngIf="isLoading() && appointments().length === 0">
+        <app-loading-spinner size="lg"></app-loading-spinner>
+        <p class="loading-text">Fetching clinic appointments schedule...</p>
       </div>
-      <h2 class="placeholder-title">Tabular List View</h2>
-      <p class="placeholder-desc">Searchable and filterable table listing all clinic appointments. (Coming in Phase 2)</p>
+
+      <!-- Error State -->
+      <div class="view-content-wrapper" *ngIf="!isLoading() && errorMessage()">
+        <div class="placeholder-icon" style="background-color: var(--danger-soft); color: var(--danger);">
+          <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2.5" fill="none">
+            <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+        <h2 class="placeholder-title" style="color: var(--danger);">Failed to Load Data</h2>
+        <p class="placeholder-desc">{{ errorMessage() }}</p>
+        <app-button variant="secondary" (click)="loadAppointments()" style="margin-top: var(--s4)">Retry Loading</app-button>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!isLoading() && !errorMessage() && appointments().length === 0">
+        <app-empty-state
+          title="No Appointments Found"
+          message="No consultations match the selected date, doctor, or status filter criteria."
+          icon="calendar"
+          actionText="Clear Filter Settings"
+          (action)="resetFilters()">
+        </app-empty-state>
+      </div>
+
+      <!-- Data Table Card -->
+      <div class="table-card" *ngIf="!isLoading() && !errorMessage() && appointments().length > 0">
+        <app-data-table
+          [columns]="columns"
+          [data]="appointments()"
+          [customCellTemplate]="customCell">
+        </app-data-table>
+      </div>
     </div>
   </div>
 </div>
+
+<!-- Reusable Custom Cell Templates for Data Table -->
+<ng-template #customCell let-row let-column="column">
+  <!-- Time Slot Column -->
+  <ng-container *ngIf="column.key === 'timeSlot'">
+    <span style="font-weight: 500;">{{ row.startTime }} - {{ row.endTime }}</span>
+  </ng-container>
+
+  <!-- Status Column -->
+  <ng-container *ngIf="column.key === 'status'">
+    <app-status-badge [status]="row.status"></app-status-badge>
+  </ng-container>
+
+  <!-- Actions Column -->
+  <ng-container *ngIf="column.key === 'actions'">
+    <app-button size="sm" variant="secondary" (click)="onViewDetails(row)">
+      Details
+    </app-button>
+  </ng-container>
+</ng-template>

@@ -5,6 +5,75 @@
   animation: fadeIn var(--dur-lg) var(--ease);
 }
 
+/* Filter Bar Styling */
+.filters-row {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: var(--s4);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: var(--s4) var(--s6);
+  box-shadow: var(--shadow-sm);
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s1.5);
+  min-width: 180px;
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .filter-item {
+    min-width: 100%;
+  }
+}
+
+.filter-item label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.filter-control {
+  height: 38px;
+  padding: 0 var(--s3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: 0.875rem;
+  background-color: var(--bg);
+  color: var(--text);
+  transition: all var(--dur) var(--ease);
+  width: 100%;
+}
+
+.filter-control:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.reset-btn-container {
+  display: flex;
+  align-items: flex-end;
+  height: 38px;
+}
+
+@media (max-width: 768px) {
+  .reset-btn-container {
+    width: 100%;
+  }
+  .reset-btn-container ::ng-deep app-button,
+  .reset-btn-container ::ng-deep button {
+    width: 100%;
+  }
+}
+
 /* Tab Switcher Styling */
 .view-tabs {
   display: flex;
@@ -44,7 +113,7 @@
   flex-shrink: 0;
 }
 
-/* View Content Containers */
+/* View Content Containers & Placeholders */
 .view-content-wrapper {
   background-color: var(--surface);
   border: 1px solid var(--border);
