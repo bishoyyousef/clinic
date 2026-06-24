@@ -18,9 +18,13 @@ export const roleGuard = (allowedRoles: string[]): CanActivateFn => {
 
     toastService.show('Access denied. You do not have permission to view this page.', 'error');
     
-    // Redirect based on current authentication state
+    // Redirect based on current authentication state and role
     if (authService.isLoggedIn()) {
-      router.navigate(['/dashboard']);
+      if (userRole === 'Doctor') {
+        router.navigate(['/patients']);
+      } else {
+        router.navigate(['/dashboard']);
+      }
     } else {
       router.navigate(['/login']);
     }
@@ -28,3 +32,4 @@ export const roleGuard = (allowedRoles: string[]): CanActivateFn => {
     return false;
   };
 };
+
