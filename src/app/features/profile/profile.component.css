@@ -1,0 +1,226 @@
+.profile-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s6);
+}
+
+/* Profile Layout Grid */
+.profile-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: var(--s6);
+  align-items: start;
+}
+
+/* Left Column: Summary Card */
+.summary-card {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: var(--s6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s3);
+  text-align: center;
+}
+
+.avatar-large {
+  width: 96px;
+  height: 96px;
+  border-radius: var(--r-full);
+  background-color: var(--accent-soft);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.25rem;
+  font-weight: 800;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+}
+
+.user-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: var(--s1);
+}
+
+.role-badge {
+  display: inline-flex;
+  padding: var(--s1) var(--s3);
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--r-full);
+  text-transform: capitalize;
+}
+
+.role-badge.admin {
+  background-color: var(--accent-soft);
+  color: var(--accent);
+}
+
+.role-badge.doctor {
+  background-color: var(--accent-soft);
+  color: var(--accent);
+}
+
+.role-badge.receptionist {
+  background-color: var(--success-soft);
+  color: var(--success);
+}
+
+.role-badge.patient {
+  background-color: var(--info-soft);
+  color: var(--info);
+}
+
+.info-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+  margin-top: var(--s5);
+  padding-top: var(--s5);
+  border-top: 1px solid var(--border);
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: var(--s3.5);
+}
+
+.info-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.info-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.info-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.info-value {
+  font-size: 0.875rem;
+  color: var(--text);
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.info-value.status-active {
+  color: var(--success);
+  font-weight: 600;
+}
+
+/* Right Column: Forms */
+.forms-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s6);
+}
+
+.form-card {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: var(--s6);
+  box-shadow: var(--shadow-sm);
+}
+
+.card-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.card-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-top: var(--s1);
+  margin-bottom: var(--s5);
+  line-height: 1.4;
+}
+
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s5);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.form-group label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.required-asterisk {
+  color: var(--danger);
+}
+
+.input-wrapper input {
+  width: 100%;
+  height: 42px;
+  padding: 0 var(--s4);
+  font-size: 0.9375rem;
+  background-color: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  transition: all var(--dur) var(--ease);
+}
+
+.input-wrapper input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background-color: var(--surface);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.input-wrapper.error input {
+  border-color: var(--danger);
+  background-color: var(--danger-soft);
+}
+
+.field-error {
+  font-size: 0.75rem;
+  color: var(--danger);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--s2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+}

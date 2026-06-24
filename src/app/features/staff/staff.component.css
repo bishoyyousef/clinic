@@ -1,0 +1,252 @@
+.staff-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s6);
+  animation: fadeIn var(--dur-lg) var(--ease);
+}
+
+.table-card {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+/* Credentials Banner */
+.cred-banner {
+  background-color: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: var(--r);
+  padding: var(--s5) var(--s6);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: var(--s2);
+}
+
+.cred-header {
+  display: flex;
+  align-items: center;
+  gap: var(--s2.5);
+  color: var(--accent);
+  margin-bottom: var(--s2);
+}
+
+.cred-header h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.cred-msg {
+  font-size: 0.875rem;
+  color: var(--text);
+  margin-bottom: var(--s3);
+}
+
+.cred-details {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: var(--s4);
+  width: 100%;
+  max-width: 480px;
+  font-size: 0.875rem;
+}
+
+.cred-details code {
+  font-family: monospace;
+  font-size: 0.9375rem;
+  background-color: var(--surface-2);
+  padding: var(--s0.5) var(--s1.5);
+  border-radius: 4px;
+  color: var(--text);
+}
+
+.pwd-code {
+  color: var(--danger) !important;
+  font-weight: bold;
+}
+
+/* Custom Table Cells & Badges */
+.staff-avatar-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+}
+
+.staff-avatar-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-full);
+  background-color: var(--accent-soft);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.staff-name-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.staff-name-text {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.staff-spec-text {
+  font-size: 0.75rem;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* Unified Badges and Chips styling */
+.role-badge, .portal-status-chip {
+  display: inline-flex;
+  padding: var(--s1) var(--s2.5);
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--r-full);
+}
+
+.role-badge.doctor {
+  background-color: var(--accent-soft);
+  color: var(--accent);
+}
+
+.role-badge.receptionist, .portal-status-chip.active {
+  background-color: var(--success-soft);
+  color: var(--success);
+}
+
+.portal-status-chip {
+  background-color: var(--danger-soft);
+  color: var(--danger);
+}
+
+.status-toggle-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+}
+
+.toggle-action-btn {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.toggle-action-btn:hover {
+  color: var(--accent-hover);
+}
+
+/* Modal Form Styling */
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4.5);
+  padding: var(--s2) 0;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.form-group label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.required-asterisk {
+  color: var(--danger);
+}
+
+.input-wrapper input, .form-textarea {
+  width: 100%;
+  font-size: 0.9375rem;
+  background-color: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  transition: all var(--dur-sm) var(--ease);
+}
+
+.input-wrapper input {
+  height: 42px;
+  padding: 0 var(--s4);
+}
+
+.form-textarea {
+  min-height: 80px;
+  padding: var(--s3) var(--s4);
+  resize: vertical;
+}
+
+.input-wrapper input:focus, .form-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  background-color: var(--surface);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.input-wrapper.error input {
+  border-color: var(--danger);
+  background-color: var(--danger-soft);
+}
+
+/* Role Selector Grid */
+.role-selector-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s3);
+}
+
+.role-option {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s4);
+  background-color: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: all var(--dur-sm) var(--ease);
+}
+
+.role-option:hover {
+  border-color: var(--border-hover);
+  background-color: var(--bg);
+}
+
+.role-option.selected {
+  border-color: var(--accent);
+  background-color: var(--accent-soft);
+}
+
+.role-option input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.role-option span {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--text);
+}

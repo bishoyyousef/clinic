@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 import { API_BASE_URL, AUTH_TOKEN_KEY } from '../config';
-import { LoginRequest, AuthResponse, UserDto } from '../models/auth.model';
+import { LoginRequest, AuthResponse, UserDto, UpdateProfileRequest, ChangePasswordRequest } from '../models/auth.model';
 
 @Injectable({
   providedIn: 'root'
@@ -53,5 +53,17 @@ export class AuthService {
         this.currentUser.set(user);
       })
     );
+  }
+
+  updateProfile(request: UpdateProfileRequest): Observable<UserDto> {
+    return this.http.put<UserDto>(`${API_BASE_URL}/auth/profile`, request).pipe(
+      tap(user => {
+        this.currentUser.set(user);
+      })
+    );
+  }
+
+  changePassword(request: ChangePasswordRequest): Observable<void> {
+    return this.http.put<void>(`${API_BASE_URL}/auth/password`, request);
   }
 }

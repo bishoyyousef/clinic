@@ -75,6 +75,30 @@ export const routes: Routes = [
             (m) => m.SettingsComponent
           )
       },
+      {
+        path: 'staff',
+        canActivate: [roleGuard(['Admin'])],
+        loadComponent: () =>
+          import('./features/staff/staff.component').then(
+            (m) => m.StaffComponent
+          )
+      },
+      {
+        path: 'reports',
+        canActivate: [roleGuard(['Admin'])],
+        loadComponent: () =>
+          import('./features/reports/reports.component').then(
+            (m) => m.ReportsComponent
+          )
+      },
+      {
+        path: 'profile',
+        canActivate: [roleGuard(['Admin', 'Receptionist', 'Doctor'])],
+        loadComponent: () =>
+          import('./features/profile/profile.component').then(
+            (m) => m.ProfileComponent
+          )
+      },
       // Redirect empty path to Dashboard
       {
         path: '',
