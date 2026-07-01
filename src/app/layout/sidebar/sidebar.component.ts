@@ -74,6 +74,12 @@ export class SidebarComponent {
       roles: ['Admin']
     },
     {
+      path: '/settings',
+      label: 'Clinic Settings',
+      icon: 'settings',
+      roles: ['Admin', 'Receptionist', 'Doctor']
+    },
+    {
       path: '/profile',
       label: 'Profile',
       icon: 'profile',

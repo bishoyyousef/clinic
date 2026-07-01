@@ -1,0 +1,197 @@
+<div class="settings-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Clinic Settings</h1>
+      <p class="page-subtitle">Configure clinic-wide operational rules, scheduling constants, and notification alerts</p>
+    </div>
+  </div>
+
+  <form [formGroup]="settingsForm" (ngSubmit)="onSave()" class="settings-form">
+    <div class="settings-grid">
+      <!-- Section 1: General Clinic Information -->
+      <div class="form-card">
+        <h3 class="card-title">General Information</h3>
+        <p class="card-subtitle">Manage clinic display branding and public contact details</p>
+
+        <!-- Clinic Name -->
+        <div class="form-group">
+          <label for="clinicName">Clinic Brand Name <span class="required-asterisk">*</span></label>
+          <div class="input-wrapper" [class.error]="settingsForm.get('clinicName')?.touched && settingsForm.get('clinicName')?.invalid">
+            <input id="clinicName" type="text" formControlName="clinicName" placeholder="e.g. Clarity Clinic" />
+          </div>
+          <span class="field-error" *ngIf="settingsForm.get('clinicName')?.touched && settingsForm.get('clinicName')?.hasError('required')">
+            Clinic name is required.
+          </span>
+        </div>
+
+        <!-- Hotline -->
+        <div class="form-group">
+          <label for="hotline">Hotline Number <span class="required-asterisk">*</span></label>
+          <div class="input-wrapper" [class.error]="settingsForm.get('hotline')?.touched && settingsForm.get('hotline')?.invalid">
+            <input id="hotline" type="text" formControlName="hotline" placeholder="e.g. 19999" />
+          </div>
+          <span class="field-error" *ngIf="settingsForm.get('hotline')?.touched && settingsForm.get('hotline')?.invalid">
+            Please enter a valid hotline number.
+          </span>
+        </div>
+
+        <!-- Support Email -->
+        <div class="form-group">
+          <label for="supportEmail">Support Email <span class="required-asterisk">*</span></label>
+          <div class="input-wrapper" [class.error]="settingsForm.get('supportEmail')?.touched && settingsForm.get('supportEmail')?.invalid">
+            <input id="supportEmail" type="email" formControlName="supportEmail" placeholder="support@clinic.com" />
+          </div>
+          <span class="field-error" *ngIf="settingsForm.get('supportEmail')?.touched && settingsForm.get('supportEmail')?.invalid">
+            Please enter a valid clinic support email address.
+          </span>
+        </div>
+
+        <!-- Address -->
+        <div class="form-group">
+          <label for="address">Full Physical Address <span class="required-asterisk">*</span></label>
+          <div class="input-wrapper" [class.error]="settingsForm.get('address')?.touched && settingsForm.get('address')?.invalid">
+            <input id="address" type="text" formControlName="address" placeholder="e.g. Street, Area, City" />
+          </div>
+          <span class="field-error" *ngIf="settingsForm.get('address')?.touched && settingsForm.get('address')?.hasError('required')">
+            Address is required.
+          </span>
+        </div>
+      </div>
+
+      <!-- Section 2: Operational Preferences -->
+      <div class="form-card">
+        <h3 class="card-title">Scheduling & Operations</h3>
+        <p class="card-subtitle">Define booking intervals, consultation pricing, and schedule logic</p>
+
+        <!-- Consultation Fee -->
+        <div class="form-group">
+          <label for="defaultConsultationFee">Default Consultation Fee (EGP) <span class="required-asterisk">*</span></label>
+          <div class="input-wrapper" [class.error]="settingsForm.get('defaultConsultationFee')?.touched && settingsForm.get('defaultConsultationFee')?.invalid">
+            <input id="defaultConsultationFee" type="number" formControlName="defaultConsultationFee" placeholder="e.g. 450" />
+          </div>
+          <span class="field-error" *ngIf="settingsForm.get('defaultConsultationFee')?.touched && settingsForm.get('defaultConsultationFee')?.invalid">
+            Please enter a valid consultation fee.
+          </span>
+        </div>
+
+        <!-- Buffer Time -->
+        <div class="form-group">
+          <label for="bufferTime">Inter-Session Buffer Time <span class="required-asterisk">*</span></label>
+          <div class="input-wrapper">
+            <select id="bufferTime" formControlName="bufferTime">
+              <option value="0">No Buffer (Continuous)</option>
+              <option value="5">5 Minutes</option>
+              <option value="10">10 Minutes</option>
+              <option value="15">15 Minutes</option>
+              <option value="20">20 Minutes</option>
+              <option value="30">30 Minutes</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Slot Duration -->
+        <div class="form-group">
+          <label for="slotDuration">Default Consultation Slot Duration <span class="required-asterisk">*</span></label>
+          <div class="input-wrapper">
+            <select id="slotDuration" formControlName="slotDuration">
+              <option value="15">15 Minutes</option>
+              <option value="30">30 Minutes</option>
+              <option value="45">45 Minutes</option>
+              <option value="60">60 Minutes (1 Hour)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3: Messaging & Alert Notifications -->
+      <div class="form-card">
+        <h3 class="card-title">System Notifications</h3>
+        <p class="card-subtitle">Configure patient communications, receipt dispatches, and auto-cancellations</p>
+
+        <div class="toggle-list">
+          <!-- SMS Toggle -->
+          <div class="toggle-control">
+            <div class="toggle-label">
+              <span class="toggle-title">SMS & WhatsApp Alerts</span>
+              <span class="toggle-desc">Dispatch automatic booking confirmation and SMS reminders to patients.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" formControlName="enableSmsReminders" />
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- Email Receipts Toggle -->
+          <div class="toggle-control">
+            <div class="toggle-label">
+              <span class="toggle-title">Automated Email Receipts</span>
+              <span class="toggle-desc">Email a copy of the clinic payment receipt to patients upon billing.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" formControlName="enableEmailReceipts" />
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- Auto Cancel Toggle -->
+          <div class="toggle-control">
+            <div class="toggle-label">
+              <span class="toggle-title">Auto-cancel Unpaid Bookings</span>
+              <span class="toggle-desc">Automatically cancel unpaid online slots 2 hours before session start.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" formControlName="enableAutoCancel" />
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 4: Localisation & Display preferences -->
+      <div class="form-card">
+        <h3 class="card-title">Localisation & Display</h3>
+        <p class="card-subtitle">Manage UI presentation settings, language, and calendar grids</p>
+
+        <!-- Interface Language -->
+        <div class="form-group">
+          <label for="language">Clinic Interface Language <span class="required-asterisk">*</span></label>
+          <div class="input-wrapper">
+            <select id="language" formControlName="language">
+              <option value="en">English (US)</option>
+              <option value="ar">العربية (Arabic)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Week Start Day -->
+        <div class="form-group">
+          <label for="weekStartDay">Calendar Week Starts On <span class="required-asterisk">*</span></label>
+          <div class="input-wrapper">
+            <select id="weekStartDay" formControlName="weekStartDay">
+              <option value="6">Saturday</option>
+              <option value="0">Sunday</option>
+              <option value="1">Monday</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Actions Bar -->
+    <div class="form-actions-bar">
+      <app-button 
+        type="submit" 
+        [loading]="isSubmitting()" 
+        [disabled]="settingsForm.invalid || isSubmitting()"
+      >
+        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" style="margin-right: 6px;">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+          <polyline points="17 21 17 13 7 13 7 21"></polyline>
+          <polyline points="7 3 7 8 15 8"></polyline>
+        </svg>
+        Save Clinic Settings
+      </app-button>
+    </div>
+  </form>
+</div>
