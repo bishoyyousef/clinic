@@ -1,9 +1,9 @@
 <div class="appointments-container">
-  <!-- Page Header (uses global page-header, page-title, page-subtitle) -->
+  <!-- Page Header -->
   <div class="page-header">
     <div>
-      <h1 class="page-title">Appointments & Calendar</h1>
-      <p class="page-subtitle">Manage receptionist desk bookings, doctor schedules, check-ins, and consultation workflows</p>
+      <h1 class="page-title">Operational Calendar</h1>
+      <p class="page-subtitle">Monitor and navigate clinic specialist booking calendars and daily queues</p>
     </div>
     <app-button routerLink="/walk-in">
       <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" style="margin-right: 6px;">
@@ -71,12 +71,32 @@
     </div>
   </div>
 
-  <!-- Tabular List View -->
+  <!-- Weekly Calendar View Content -->
   <div>
+    <!-- Calendar Navigation Toolbar -->
+    <div class="calendar-nav-toolbar">
+      <div class="nav-left">
+        <app-button variant="secondary" size="sm" (click)="goToToday()">Today</app-button>
+        <div class="nav-arrows">
+          <button class="nav-arrow-btn" (click)="prevWeek()" aria-label="Previous Week">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <button class="nav-arrow-btn" (click)="nextWeek()" aria-label="Next Week">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+        <span class="week-range-title">{{ weekRangeLabel() }}</span>
+      </div>
+    </div>
+
     <!-- Loading State -->
     <div class="loading-state" *ngIf="isLoading() && appointments().length === 0">
       <app-loading-spinner size="lg"></app-loading-spinner>
-      <p class="loading-text">Fetching clinic appointments schedule...</p>
+      <p class="loading-text">Loading weekly schedule...</p>
     </div>
 
     <!-- Error State -->
@@ -93,51 +113,44 @@
       <app-button variant="secondary" (click)="loadAppointments()" style="margin-top: var(--s4)">Retry Loading</app-button>
     </div>
 
-    <!-- Empty State -->
-    <div *ngIf="!isLoading() && !errorMessage() && appointments().length === 0">
-      <app-empty-state
-        title="No Appointments Found"
-        message="No consultations match the selected date, doctor, or status filter criteria."
-        icon="calendar"
-        actionText="Clear Filter Settings"
-        (action)="resetFilters()">
-      </app-empty-state>
-    </div>
-
-    <!-- Data Table Card -->
-    <div class="table-card" *ngIf="!isLoading() && !errorMessage() && appointments().length > 0">
-      <app-data-table
-        [columns]="columns"
-        [data]="appointments()"
-        [customCellTemplate]="customCell">
-      </app-data-table>
+    <!-- Calendar Weekly Grid -->
+    <div class="calendar-grid" *ngIf="!isLoading() && !errorMessage()">
+      <div class="calendar-day-col" *ngFor="let day of weekDays()" [class.today]="day.isToday">
+        <!-- Day Header -->
+        <div class="day-col-header">
+          <span class="day-lbl">{{ day.label }}</span>
+          <span class="day-num">{{ day.dayNum }}</span>
+        </div>
+        
+        <!-- Appointment Cards List -->
+        <div class="day-cards-list">
+          <div 
+            *ngFor="let app of getAppointmentsForDay(day.dateStr)" 
+            [class]="'appointment-card ' + app.status.toLowerCase()"
+            (click)="onViewDetails(app)"
+          >
+            <div class="card-time">{{ app.startTime }} - {{ app.endTime }}</div>
+            <div class="card-patient">{{ app.patientName }}</div>
+            <div class="card-doctor">Dr. {{ app.doctorName }}</div>
+            <div class="card-meta">
+              <span class="mode-badge" [class.online]="app.mode === 'Online'">
+                {{ app.mode }}
+              </span>
+              <span class="status-indicator-text">{{ app.status }}</span>
+            </div>
+          </div>
+          
+          <!-- Empty Day Message -->
+          <div class="empty-day-message" *ngIf="getAppointmentsForDay(day.dateStr).length === 0">
+            No bookings
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Reusable Custom Cell Templates for Data Table -->
-<ng-template #customCell let-row let-column="column">
-  <!-- Time Slot Column -->
-  <ng-container *ngIf="column.key === 'timeSlot'">
-    <span style="font-weight: 500;">{{ row.startTime }} - {{ row.endTime }}</span>
-  </ng-container>
-
-  <!-- Status Column -->
-  <ng-container *ngIf="column.key === 'status'">
-    <app-status-badge [status]="row.status"></app-status-badge>
-  </ng-container>
-
-  <!-- Actions Column -->
-  <ng-container *ngIf="column.key === 'actions'">
-    <app-button size="sm" variant="secondary" (click)="onViewDetails(row)">
-      Details
-    </app-button>
-  </ng-container>
-</ng-template>
-
-<!-- ========================================== -->
-<!-- 3. APPOINTMENT DETAILS DIALOG / MODAL      -->
-<!-- ========================================== -->
+<!-- Appointment Details Dialog -->
 <app-modal
   [isOpen]="isDetailsOpen()"
   [title]="activeAppointment() ? 'Appointment Details #' + activeAppointment()?.id : 'Loading Details...'"
@@ -145,15 +158,12 @@
   [hasFooter]="activeAppointment() !== null"
   (close)="closeDetails()">
   
-  <!-- Loading Details State -->
   <div class="loading-state" *ngIf="isLoadingDetails()">
     <app-loading-spinner size="md"></app-loading-spinner>
     <p class="loading-text">Loading comprehensive appointment file...</p>
   </div>
 
-  <!-- Loaded Appointment Details -->
   <div *ngIf="!isLoadingDetails() && activeAppointment() as app">
-    <!-- Status Banner Header -->
     <div class="details-status-banner">
       <div class="banner-left">
         <app-status-badge [status]="app.status"></app-status-badge>
@@ -164,58 +174,41 @@
       </span>
     </div>
 
-    <!-- Main details sections grid -->
     <div class="details-grid">
-      <!-- 1. Patient Info -->
       <div class="details-section">
         <h4 class="section-hdr">Patient Details</h4>
         <div class="detail-row">
-          <span class="detail-lbl">Full Name</span>
-          <span class="detail-val" style="color: var(--accent); font-weight: 700;">{{ app.patientName }}</span>
+          <span class="detail-lbl">Name</span>
+          <span class="detail-val" style="color: var(--accent); font-weight: 750;">{{ app.patientName }}</span>
         </div>
         <div class="detail-row">
-          <span class="detail-lbl">Patient File ID</span>
+          <span class="detail-lbl">File ID</span>
           <span class="detail-val">#{{ app.patientId }}</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-lbl">Portal Access Status</span>
-          <span class="detail-val">Active File</span>
         </div>
       </div>
 
-      <!-- 2. Doctor Info -->
       <div class="details-section">
         <h4 class="section-hdr">Specialist Details</h4>
         <div class="detail-row">
           <span class="detail-lbl">Assigned Doctor</span>
           <span class="detail-val">Dr. {{ app.doctorName }}</span>
         </div>
-        <div class="detail-row">
-          <span class="detail-lbl">Doctor UUID</span>
-          <span class="detail-val" style="font-size: 0.75rem; font-family: monospace; font-weight: normal; word-break: break-all;">{{ app.doctorId }}</span>
-        </div>
       </div>
 
-      <!-- 3. Service Info -->
       <div class="details-section">
         <h4 class="section-hdr">Consultation Details</h4>
         <div class="detail-row">
-          <span class="detail-lbl">Selected Service</span>
+          <span class="detail-lbl">Service</span>
           <span class="detail-val">{{ app.serviceName }}</span>
         </div>
-        <div class="detail-row">
-          <span class="detail-lbl">Service ID</span>
-          <span class="detail-val">#{{ app.serviceId }}</span>
-        </div>
         <div class="detail-row" *ngIf="app.meetingLink">
-          <span class="detail-lbl">Telehealth Meeting Link</span>
+          <span class="detail-lbl">Video Consultation</span>
           <span class="detail-val">
-            <a [href]="app.meetingLink" target="_blank" style="color: var(--accent); text-decoration: underline; font-weight: bold;">Join Video Consultation</a>
+            <a [href]="app.meetingLink" target="_blank" style="color: var(--accent); text-decoration: underline; font-weight: bold;">Join Call</a>
           </span>
         </div>
       </div>
 
-      <!-- 4. Payment Info -->
       <div class="details-section">
         <h4 class="section-hdr">Billing & Payments</h4>
         <div class="detail-row">
@@ -225,10 +218,6 @@
           </span>
         </div>
         <div class="detail-row">
-          <span class="detail-lbl">Payment Mode</span>
-          <span class="detail-val" style="text-transform: capitalize;">{{ app.payment?.method || 'Cash' }}</span>
-        </div>
-        <div class="detail-row">
           <span class="detail-lbl">Payment Status</span>
           <span class="detail-val">
             <span [style.color]="app.payment?.status === 'Paid' ? 'var(--success)' : 'var(--danger)'" style="font-weight: 700;">
@@ -236,13 +225,8 @@
             </span>
           </span>
         </div>
-        <div class="detail-row" *ngIf="app.payment?.transactionRef">
-          <span class="detail-lbl">Transaction Ref</span>
-          <span class="detail-val" style="font-size: 0.75rem; font-family: monospace; font-weight: normal;">{{ app.payment?.transactionRef }}</span>
-        </div>
       </div>
 
-      <!-- 5. Clinical Visit Record (If completed) -->
       <div class="details-section full-width" *ngIf="app.visit">
         <h4 class="section-hdr">Clinical Consultation Record</h4>
         <div class="detail-row">
@@ -250,13 +234,11 @@
           <span class="detail-val" style="text-align: left; font-weight: 700; color: var(--accent);">{{ app.visit.diagnosis }}</span>
         </div>
         <div class="detail-row" style="margin-top: var(--s2); flex-direction: column; align-items: flex-start; gap: var(--s1);">
-          <span class="detail-lbl">Doctor Consultation Notes</span>
+          <span class="detail-lbl">Notes</span>
           <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; font-style: italic; margin: 0; padding-left: var(--s2); border-left: 2px solid var(--border);">
-            {{ app.visit.notes || 'No attendance notes recorded.' }}
+            {{ app.visit.notes }}
           </p>
         </div>
-        
-        <!-- Prescriptions -->
         <div style="margin-top: var(--s3);" *ngIf="app.visit.prescription && app.visit.prescription.length > 0">
           <span class="detail-lbl">Prescribed Treatment</span>
           <div class="visit-prescriptions">
@@ -269,15 +251,12 @@
     </div>
   </div>
 
-  <!-- Action Buttons Footer -->
   <div modal-footer class="modal-actions-footer" *ngIf="activeAppointment() as app">
-    <!-- Universal Action Loading Indicator -->
     <div style="display: flex; align-items: center; gap: var(--s2); margin-right: auto;" *ngIf="isActionLoading()">
       <app-loading-spinner size="sm"></app-loading-spinner>
       <span style="font-size: 0.8125rem; color: var(--text-muted);">Processing transaction...</span>
     </div>
 
-    <!-- Active State Buttons -->
     <ng-container *ngIf="!isActionLoading()">
       <!-- Confirmed State Actions -->
       <ng-container *ngIf="app.status === 'Confirmed'">
@@ -291,11 +270,11 @@
           Mark No-Show
         </app-button>
         <app-button variant="text" class="text-danger" (click)="onCancelAppointment(app.id)">
-          Cancel Appointment
+          Cancel
         </app-button>
       </ng-container>
 
-      <!-- Arrived (Checked In) State Actions -->
+      <!-- Arrived State Actions -->
       <ng-container *ngIf="app.status === 'Arrived'">
         <app-button variant="primary" (click)="onComplete(app.id)">
           Complete Consultation
@@ -311,7 +290,7 @@
         </app-button>
       </ng-container>
 
-      <!-- PendingPayment State Actions -->
+      <!-- Pending Payment Actions -->
       <ng-container *ngIf="app.status === 'PendingPayment'">
         <app-button 
           variant="primary" 
@@ -323,21 +302,18 @@
           Reschedule
         </app-button>
         <app-button variant="text" class="text-danger" (click)="onCancelAppointment(app.id)">
-          Cancel Appointment
+          Cancel
         </app-button>
       </ng-container>
     </ng-container>
 
-    <!-- Close Drawer -->
     <app-button variant="secondary" (click)="closeDetails()" [disabled]="isActionLoading()">
       Close
     </app-button>
   </div>
 </app-modal>
 
-<!-- ========================================== -->
-<!-- 4. RESCHEDULE APPOINTMENT SUB-MODAL        -->
-<!-- ========================================== -->
+<!-- Reschedule Appointment Sub-Modal -->
 <app-modal
   [isOpen]="isRescheduleOpen()"
   title="Reschedule Appointment"
@@ -346,7 +322,6 @@
   (close)="closeReschedule()">
   
   <div class="modal-form" *ngIf="activeAppointment() as app">
-    <!-- Selected Date Input Picker -->
     <div class="form-group">
       <label for="reschedule-date-picker">Select New Date <span class="required-asterisk">*</span></label>
       <input 
@@ -359,17 +334,14 @@
       />
     </div>
 
-    <!-- Available slots section -->
     <div class="form-group" style="margin-top: var(--s4);">
       <label>Available Consultation Slots <span class="required-asterisk">*</span></label>
       
-      <!-- Loading slots spinner -->
       <div class="loading-slots-state" *ngIf="isFetchingSlots()" style="display: flex; align-items: center; gap: var(--s2); padding: var(--s3) 0;">
         <app-loading-spinner size="sm"></app-loading-spinner>
-        <span style="font-size: 0.875rem; color: var(--text-muted);">Fetching available slots for Dr. {{ app.doctorName }}...</span>
+        <span style="font-size: 0.875rem; color: var(--text-muted);">Fetching slots...</span>
       </div>
 
-      <!-- Slots Pill Grid -->
       <ng-container *ngIf="!isFetchingSlots()">
         <div class="slots-grid" *ngIf="availableSlots().length > 0">
           <button
@@ -383,28 +355,24 @@
           </button>
         </div>
 
-        <!-- Empty slots warning banner -->
         <div class="slots-empty-banner" *ngIf="availableSlots().length === 0">
-          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" style="flex-shrink: 0;">
-            <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon>
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+            <circle cx="12" cy="12" r="10"></circle>
             <line x1="12" y1="8" x2="12" y2="12"></line>
             <line x1="12" y1="16" x2="12.01" y2="16"></line>
           </svg>
-          <span>No available booking slots on this date. Please select another date.</span>
+          <span>No available slots. Select another date.</span>
         </div>
       </ng-container>
     </div>
   </div>
 
-  <!-- Footer Actions -->
   <div modal-footer class="modal-actions-footer" *ngIf="activeAppointment() as app">
-    <!-- Action Submitting Loader -->
     <div style="display: flex; align-items: center; gap: var(--s2); margin-right: auto;" *ngIf="isActionLoading()">
       <app-loading-spinner size="sm"></app-loading-spinner>
       <span style="font-size: 0.8125rem; color: var(--text-muted);">Saving new schedule...</span>
     </div>
 
-    <!-- Actions -->
     <ng-container *ngIf="!isActionLoading()">
       <app-button 
         variant="primary" 

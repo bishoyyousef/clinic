@@ -1,12 +1,10 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
-import { DoctorService } from '../../core/services/doctor.service';
+import { Router } from '@angular/router';
 import { AdminService } from '../../core/services/admin.service';
 import { ToastService } from '../../core/services/toast.service';
 import { StaffDto, CreateDoctorRequest, UpdateStaffRequest } from '../../core/models/admin.model';
-import { DoctorDetailsDto, AvailabilityWindowDto, BlockedDateDto } from '../../core/models/doctor.model';
 import { TableColumn, DataTableComponent } from '../../shared/components/data-table/data-table.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
@@ -28,338 +26,65 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
   ],
   template: `
     <div class="doctors-container">
-      <!-- ========================================== -->
-      <!-- 1. DOCTOR LIST VIEW                       -->
-      <!-- ========================================== -->
-      <ng-container *ngIf="activeView() === 'list'">
-        <div class="page-header">
-          <div>
-            <h1 class="page-title">Doctors & Specialists</h1>
-            <p class="page-subtitle">Manage clinic medical staff profiles, portal access, and clinical schedules</p>
-          </div>
-          <app-button (click)="openCreateModal()">
-            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" style="margin-right: 6px;">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            Add Doctor
-          </app-button>
+      <!-- 1. DOCTOR LIST VIEW -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Doctors & Specialists</h1>
+          <p class="page-subtitle">Manage clinic medical staff profiles, portal access, and clinical schedules</p>
         </div>
+        <app-button (click)="openCreateModal()">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" style="margin-right: 6px;">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Add Doctor
+        </app-button>
+      </div>
 
-        <!-- Temporary Credentials Banner (after creating a doctor) -->
-        <div class="credentials-banner" *ngIf="tempCredentials()">
-          <div class="credentials-header">
-            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" class="info-icon">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-            </svg>
-            <h3>Doctor Registered Successfully!</h3>
-          </div>
-          <p class="credentials-msg">Please copy the temporary login credentials below. The password will not be shown again:</p>
-          <div class="credentials-details">
-            <div><strong>Login Email:</strong> <code>{{ tempCredentials()?.email }}</code></div>
-            <div style="margin-top: var(--s2)"><strong>Temporary Password:</strong> <code class="pwd-code">{{ tempCredentials()?.tempPassword }}</code></div>
-          </div>
-          <app-button variant="secondary" (click)="clearCredentials()" style="margin-top: var(--s4)">Dismiss</app-button>
+      <!-- Temporary Credentials Banner (after creating a doctor) -->
+      <div class="credentials-banner" *ngIf="tempCredentials()">
+        <div class="credentials-header">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" class="info-icon">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <h3>Doctor Registered Successfully!</h3>
         </div>
-
-        <!-- Loading State -->
-        <div class="loading-state" *ngIf="isLoading() && doctors().length === 0">
-          <app-loading-spinner size="lg"></app-loading-spinner>
-          <p class="loading-text">Retrieving specialist records...</p>
+        <p class="credentials-msg">Please copy the temporary login credentials below. The password will not be shown again:</p>
+        <div class="credentials-details">
+          <div><strong>Login Email:</strong> <code>{{ tempCredentials()?.email }}</code></div>
+          <div style="margin-top: var(--s2)"><strong>Temporary Password:</strong> <code class="pwd-code">{{ tempCredentials()?.tempPassword }}</code></div>
         </div>
+        <app-button variant="secondary" (click)="clearCredentials()" style="margin-top: var(--s4)">Dismiss</app-button>
+      </div>
 
-        <!-- Doctors Data Table -->
-        <div class="table-card" *ngIf="!isLoading() && doctors().length > 0">
-          <app-data-table
-            [columns]="columns"
-            [data]="doctors()"
-            [customCellTemplate]="customCell">
-          </app-data-table>
-        </div>
+      <!-- Loading State -->
+      <div class="loading-state" *ngIf="isLoading() && doctors().length === 0">
+        <app-loading-spinner size="lg"></app-loading-spinner>
+        <p class="loading-text">Retrieving specialist records...</p>
+      </div>
 
-        <!-- Empty Directory State -->
-        <div class="empty-directory" *ngIf="doctors().length === 0 && !isLoading()">
-          <app-empty-state
-            title="No Doctors Registered"
-            message="No medical specialists have been registered in the clinic database yet."
-            icon="default"
-            actionText="Register First Doctor"
-            (action)="openCreateModal()">
-          </app-empty-state>
-        </div>
-      </ng-container>
+      <!-- Doctors Data Table -->
+      <div class="table-card" *ngIf="!isLoading() && doctors().length > 0">
+        <app-data-table
+          [columns]="columns"
+          [data]="doctors()"
+          [customCellTemplate]="customCell">
+        </app-data-table>
+      </div>
 
-      <!-- ========================================== -->
-      <!-- 2. DOCTOR DETAILS / AVAILABILITY VIEW     -->
-      <!-- ========================================== -->
-      <ng-container *ngIf="activeView() === 'details'">
-        <!-- Back navigation header -->
-        <div class="detail-header">
-          <app-button variant="secondary" (click)="closeDetails()">
-            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" style="margin-right: 6px;">
-              <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
-            Back to Specialists
-          </app-button>
-        </div>
+      <!-- Empty Directory State -->
+      <div class="empty-directory" *ngIf="doctors().length === 0 && !isLoading()">
+        <app-empty-state
+          title="No Doctors Registered"
+          message="No medical specialists have been registered in the clinic database yet."
+          icon="default"
+          actionText="Register First Doctor"
+          (action)="openCreateModal()">
+        </app-empty-state>
+      </div>
 
-        <!-- Loading Details Spinner -->
-        <div class="loading-state" *ngIf="isDetailsLoading()">
-          <app-loading-spinner size="lg"></app-loading-spinner>
-          <p class="loading-text">Retrieving profile and schedule data...</p>
-        </div>
-
-        <!-- Main Details Content -->
-        <div class="profile-layout" *ngIf="!isDetailsLoading() && selectedDoctor()">
-          <!-- Left side: Profile summary card -->
-          <div class="profile-summary-card">
-            <div class="avatar-banner">
-              <div class="avatar-circle-lg">
-                {{ getInitials(selectedDoctor()?.name || '') }}
-              </div>
-              <h2 class="doctor-name">Dr. {{ selectedDoctor()?.name }}</h2>
-              <span class="spec-label">{{ selectedDoctor()?.specialization }}</span>
-            </div>
-            
-            <div class="doctor-ratings-stats" *ngIf="doctorDetails()">
-              <div class="rating-box">
-                <span class="rating-num">★ {{ doctorDetails()?.rating || '5.0' }}</span>
-                <span class="rating-lbl">({{ doctorDetails()?.reviewCount || 0 }} reviews)</span>
-              </div>
-              <div class="experience-box">
-                <span class="experience-num">{{ doctorDetails()?.yearsExperience || 0 }} Yrs</span>
-                <span class="experience-lbl">Experience</span>
-              </div>
-            </div>
-
-            <div class="profile-contact-info">
-              <div class="contact-item">
-                <span class="contact-lbl">Email Address</span>
-                <span class="contact-val">{{ selectedDoctor()?.email }}</span>
-              </div>
-              <div class="contact-item">
-                <span class="contact-lbl">Phone Number</span>
-                <span class="contact-val">{{ selectedDoctor()?.phone }}</span>
-              </div>
-              <div class="contact-item">
-                <span class="contact-lbl">Portal Access Status</span>
-                <span class="portal-status-badge" [class.active]="selectedDoctor()?.isActive">
-                  {{ selectedDoctor()?.isActive ? 'Active Account' : 'Suspended Account' }}
-                </span>
-              </div>
-            </div>
-            
-            <div class="bio-section" *ngIf="doctorDetails()?.bio">
-              <h4 class="section-title">Biography</h4>
-              <p class="bio-text">"{{ doctorDetails()?.bio }}"</p>
-            </div>
-          </div>
-
-          <!-- Right side: Weekly availability schedule & extensions -->
-          <div class="right-column-layout">
-            <!-- Weekly availability schedule card -->
-            <div class="availability-card">
-              <div class="availability-header">
-                <div>
-                  <h3 class="card-title">Weekly Operational Availability</h3>
-                  <p class="card-subtitle">View and configure the active weekly time windows for patient bookings</p>
-                </div>
-                <app-button (click)="openAvailabilityModal()">
-                  <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" style="margin-right: 6px;">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                    <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                  </svg>
-                  Configure Schedule
-                </app-button>
-              </div>
-
-              <!-- Availability List Grid -->
-              <div class="schedule-grid">
-                <div class="schedule-row" *ngFor="let day of weekDays">
-                  <span class="day-name">{{ day.label }}</span>
-                  
-                  <div class="day-hours">
-                    <ng-container *ngIf="getDayWindows(day.value).length > 0; else offDayTmpl">
-                      <div class="hours-pills">
-                        <div class="hours-pill" *ngFor="let window of getDayWindows(day.value)">
-                          <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" class="clock-icon">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 6 12 12 16 14"></polyline>
-                          </svg>
-                          <span>{{ window.startTime }} - {{ window.endTime }}</span>
-                        </div>
-                      </div>
-                    </ng-container>
-                    <ng-template #offDayTmpl>
-                      <span class="off-label">Off Duty</span>
-                    </ng-template>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Extensions: Blocked Dates & Slots Checker -->
-            <div class="extensions-grid">
-              <!-- Blocked Dates Card -->
-              <div class="extension-card blocked-dates-card">
-                <div class="extension-header">
-                  <div>
-                    <h3 class="card-title">Blocked Calendar Dates</h3>
-                    <p class="card-subtitle">Temporarily block dates for vacations or holidays</p>
-                  </div>
-                </div>
-
-                <div class="blocked-dates-content">
-                  <!-- Block Date Form -->
-                  <div class="block-date-form">
-                    <div class="input-wrapper">
-                      <input 
-                        type="date" 
-                        [min]="getTodayDateString()"
-                        [value]="newBlockDate()" 
-                        (input)="newBlockDate.set($any($event.target).value)"
-                        class="date-input"
-                      />
-                    </div>
-                    <app-button 
-                      [disabled]="!newBlockDate() || isBlockedDatesLoading()" 
-                      [loading]="isBlockedDatesLoading()"
-                      (click)="onBlockDate()"
-                    >
-                      Block Date
-                    </app-button>
-                  </div>
-
-                  <!-- Blocked Dates List -->
-                  <div class="blocked-dates-list-wrapper">
-                    <div class="loading-state-sm" *ngIf="isBlockedDatesLoading() && blockedDates().length === 0">
-                      <app-loading-spinner size="sm"></app-loading-spinner>
-                    </div>
-
-                    <ul class="blocked-dates-list" *ngIf="blockedDates().length > 0">
-                      <li class="blocked-date-item" *ngFor="let block of blockedDates()">
-                        <div class="blocked-date-info">
-                          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" class="calendar-icon">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                            <line x1="16" y1="2" x2="16" y2="6"></line>
-                            <line x1="8" y1="2" x2="8" y2="6"></line>
-                            <line x1="3" y1="10" x2="21" y2="10"></line>
-                          </svg>
-                          <span class="blocked-date-val">{{ block.date | date:'mediumDate' }}</span>
-                          <span class="blocked-reason-badge" *ngIf="block.reason">{{ block.reason }}</span>
-                        </div>
-                        <button 
-                          class="unblock-btn" 
-                          (click)="onUnblockDate(block)" 
-                          title="Unblock date"
-                          [disabled]="isBlockedDatesLoading()"
-                        >
-                          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
-                            <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                          </svg>
-                        </button>
-                      </li>
-                    </ul>
-
-                    <p class="no-blocked-dates" *ngIf="blockedDates().length === 0 && !isBlockedDatesLoading()">
-                      No blocked dates scheduled.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Live Slots Checker Card -->
-              <div class="extension-card slots-checker-card">
-                <div class="extension-header">
-                  <div>
-                    <h3 class="card-title">Live Slots Checker</h3>
-                    <p class="card-subtitle">Query real-time 15-minute slot availability</p>
-                  </div>
-                </div>
-
-                <div class="slots-checker-content">
-                  <!-- Checker Controls -->
-                  <div class="slots-checker-controls">
-                    <div class="form-group">
-                      <label>Select Service</label>
-                      <div class="input-wrapper">
-                        <select 
-                          [value]="slotCheckServiceId() || ''" 
-                          (change)="slotCheckServiceId.set(+$any($event.target).value); loadCheckedSlots()"
-                        >
-                          <option value="" disabled selected>Select a service...</option>
-                          <option *ngFor="let s of doctorDetails()?.services" [value]="s.id">
-                            {{ s.name }} ({{ s.durationMinutes }}m)
-                          </option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div class="form-group">
-                      <label>Select Date</label>
-                      <div class="input-wrapper">
-                        <input 
-                          type="date" 
-                          [value]="slotCheckDate()" 
-                          (change)="slotCheckDate.set($any($event.target).value); loadCheckedSlots()"
-                          class="date-input"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Slots Display Grid -->
-                  <div class="slots-display-area">
-                    <div class="loading-state-sm" *ngIf="isCheckingSlots()">
-                      <app-loading-spinner size="sm"></app-loading-spinner>
-                      <p class="loading-text-sm">Querying available slots...</p>
-                    </div>
-
-                    <ng-container *ngIf="!isCheckingSlots()">
-                      <!-- If slotCheckServiceId is not selected -->
-                      <div class="slots-prompt" *ngIf="!slotCheckServiceId()">
-                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" class="prompt-icon">
-                          <circle cx="12" cy="12" r="10"></circle>
-                          <line x1="12" y1="8" x2="12" y2="12"></line>
-                          <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                        </svg>
-                        <span>Please select a clinic service to query slot availability.</span>
-                      </div>
-
-                      <!-- Slot pills -->
-                      <div class="slots-grid" *ngIf="slotCheckServiceId() && checkedSlots().length > 0">
-                        <div class="slot-pill" *ngFor="let slot of checkedSlots()">
-                          <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" class="pill-icon">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 6 12 12 16 14"></polyline>
-                          </svg>
-                          <span>{{ slot }}</span>
-                        </div>
-                      </div>
-
-                      <!-- Empty slots state -->
-                      <div class="no-slots-warning" *ngIf="slotCheckServiceId() && checkedSlots().length === 0">
-                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" class="warning-icon">
-                          <circle cx="12" cy="12" r="10"></circle>
-                          <line x1="12" y1="8" x2="12" y2="12"></line>
-                          <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                        </svg>
-                        <span>No available booking slots on this date.</span>
-                      </div>
-                    </ng-container>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </ng-container>
-
-      <!-- ========================================== -->
-      <!-- 3. DOCTOR CRUD FORM MODAL                  -->
-      <!-- ========================================== -->
+      <!-- 2. DOCTOR CRUD FORM MODAL -->
       <app-modal
         [isOpen]="isFormOpen()"
         [title]="formMode() === 'create' ? 'Add New Medical Specialist' : 'Edit Specialist Profile'"
@@ -388,13 +113,13 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
           <div class="form-group">
             <label for="phone">Phone Number <span class="required-asterisk">*</span></label>
             <div class="input-wrapper" [class.error]="doctorForm.get('phone')?.touched && doctorForm.get('phone')?.invalid">
-              <input id="phone" type="text" formControlName="phone" placeholder="e.g. +20 100 123 4567" />
+              <input id="phone" type="tel" formControlName="phone" placeholder="e.g. +20 123 456 7890" />
             </div>
           </div>
 
           <!-- Specialization -->
           <div class="form-group">
-            <label for="specialization">Medical Specialization <span class="required-asterisk">*</span></label>
+            <label for="specialization">Specialization <span class="required-asterisk">*</span></label>
             <div class="input-wrapper" [class.error]="doctorForm.get('specialization')?.touched && doctorForm.get('specialization')?.invalid">
               <input id="specialization" type="text" formControlName="specialization" placeholder="e.g. Cardiology, Pediatrics" />
             </div>
@@ -411,66 +136,6 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
           <app-button variant="secondary" (click)="closeFormModal()" [disabled]="isSubmitting()">Cancel</app-button>
           <app-button type="submit" form="doctorFormElement" [loading]="isSubmitting()" [disabled]="doctorForm.invalid || isSubmitting()">
             {{ formMode() === 'create' ? 'Register Doctor' : 'Save Changes' }}
-          </app-button>
-        </div>
-      </app-modal>
-
-      <!-- ========================================== -->
-      <!-- 4. CONFIGURE AVAILABILITY MODAL            -->
-      <!-- ========================================== -->
-      <app-modal
-        [isOpen]="isAvailabilityFormOpen()"
-        title="Configure Weekly Schedule"
-        [hasFooter]="true"
-        size="lg"
-        (close)="closeAvailabilityModal()">
-        
-        <div class="availability-editor">
-          <p class="editor-desc">Specify the start and end operational hours for each day. Days that are unchecked represent Off Duty status.</p>
-          
-          <div class="editor-rows">
-            <div class="editor-row" *ngFor="let day of weekDays; let i = index">
-              <!-- Day Toggle Checkbox -->
-              <label class="day-toggle">
-                <input 
-                  type="checkbox" 
-                  [checked]="scheduleState[day.value].active"
-                  (change)="toggleDayActive(day.value)"
-                  class="editor-checkbox"
-                />
-                <span class="day-label">{{ day.label }}</span>
-              </label>
-
-              <!-- Inputs for hours -->
-              <div class="hours-inputs" *ngIf="scheduleState[day.value].active">
-                <div class="time-input-group">
-                  <span class="time-lbl">Start:</span>
-                  <input 
-                    type="time" 
-                    [(ngModel)]="scheduleState[day.value].startTime" 
-                    class="time-control"
-                  />
-                </div>
-                <div class="time-input-group">
-                  <span class="time-lbl">End:</span>
-                  <input 
-                    type="time" 
-                    [(ngModel)]="scheduleState[day.value].endTime" 
-                    class="time-control"
-                  />
-                </div>
-              </div>
-              <div class="hours-off-message" *ngIf="!scheduleState[day.value].active">
-                <span>Off Duty</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div modal-footer>
-          <app-button variant="secondary" (click)="closeAvailabilityModal()" [disabled]="isSubmitting()">Cancel</app-button>
-          <app-button (click)="saveAvailability()" [loading]="isSubmitting()">
-            Save Schedule
           </app-button>
         </div>
       </app-modal>
@@ -521,32 +186,15 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
   styleUrl: './doctors.component.css'
 })
 export class DoctorsComponent implements OnInit {
-  private doctorService = inject(DoctorService);
   private adminService = inject(AdminService);
   private fb = inject(FormBuilder);
   private toastService = inject(ToastService);
-
-  // Layout View Control
-  activeView = signal<'list' | 'details'>('list');
+  private router = inject(Router);
 
   // State Signals
   doctors = signal<StaffDto[]>([]);
-  selectedDoctor = signal<StaffDto | null>(null);
-  doctorDetails = signal<DoctorDetailsDto | null>(null);
-  doctorAvailability = signal<AvailabilityWindowDto[]>([]);
-  blockedDates = signal<BlockedDateDto[]>([]);
-
   isLoading = signal(true);
-  isDetailsLoading = signal(false);
   isSubmitting = signal(false);
-
-  // Availability Extensions State Signals
-  isBlockedDatesLoading = signal(false);
-  newBlockDate = signal('');
-  slotCheckDate = signal('');
-  slotCheckServiceId = signal<number | null>(null);
-  checkedSlots = signal<string[]>([]);
-  isCheckingSlots = signal(false);
 
   // Temporary credentials popup storage
   tempCredentials = signal<{ email: string, tempPassword: string } | null>(null);
@@ -567,24 +215,8 @@ export class DoctorsComponent implements OnInit {
   formMode = signal<'create' | 'update'>('create');
   editingDoctor: StaffDto | null = null;
 
-  // Availability editor state
-  isAvailabilityFormOpen = signal(false);
-  scheduleState: Record<number, { active: boolean, startTime: string, endTime: string }> = {};
-
-  // Days of the week lookup helper
-  weekDays = [
-    { value: 0, label: 'Sunday' },
-    { value: 1, label: 'Monday' },
-    { value: 2, label: 'Tuesday' },
-    { value: 3, label: 'Wednesday' },
-    { value: 4, label: 'Thursday' },
-    { value: 5, label: 'Friday' },
-    { value: 6, label: 'Saturday' }
-  ];
-
   ngOnInit(): void {
     this.initForm();
-    this.initScheduleState();
     this.loadDoctors();
   }
 
@@ -602,26 +234,12 @@ export class DoctorsComponent implements OnInit {
   }
 
   /**
-   * Initializes a default schedule configuration state for the editor.
-   */
-  initScheduleState(): void {
-    for (let i = 0; i < 7; i++) {
-      this.scheduleState[i] = {
-        active: false,
-        startTime: '09:00',
-        endTime: '17:00'
-      };
-    }
-  }
-
-  /**
    * Fetches all clinic staff members and filters locally to show Doctors.
    */
   loadDoctors(): void {
     this.isLoading.set(true);
     this.adminService.getStaff().subscribe({
       next: (staff) => {
-        // Filter the staff list to isolate doctors
         const list = (staff || []).filter(s => s.role.toLowerCase() === 'doctor');
         this.doctors.set(list);
         this.isLoading.set(false);
@@ -634,73 +252,12 @@ export class DoctorsComponent implements OnInit {
     });
   }
 
-  // ==========================================
-  // VIEW SWITCHER & CLINICAL DETAIL ACTIONS
-  // ==========================================
-
   /**
-   * Navigates to a doctor's detailed profile and availability grid.
+   * Navigates to the Availability feature page to view/edit doctor calendar.
    */
   onViewDetails(doctor: StaffDto): void {
-    this.selectedDoctor.set(doctor);
-    this.activeView.set('details');
-    this.isDetailsLoading.set(true);
-    this.doctorDetails.set(null);
-    this.doctorAvailability.set([]);
-    this.blockedDates.set([]);
-    this.newBlockDate.set('');
-    this.slotCheckDate.set(this.getTodayDateString());
-    this.slotCheckServiceId.set(null);
-    this.checkedSlots.set([]);
-
-    // Fetch doctor DTO, availability schedule, and blocked dates in parallel
-    forkJoin({
-      details: this.doctorService.getById(doctor.id),
-      availability: this.doctorService.getAvailability(doctor.id),
-      blockedDates: this.doctorService.getBlockedDates(doctor.id)
-    }).subscribe({
-      next: (res) => {
-        this.doctorDetails.set(res.details);
-        this.doctorAvailability.set(res.availability || []);
-        this.blockedDates.set(res.blockedDates || []);
-        this.isDetailsLoading.set(false);
-
-        // Auto-select first service if available to check slots right away
-        if (res.details.services && res.details.services.length > 0) {
-          this.slotCheckServiceId.set(res.details.services[0].id);
-          this.loadCheckedSlots();
-        }
-      },
-      error: (err) => {
-        this.isDetailsLoading.set(false);
-        const msg = err.error?.message || err.message || 'Failed to fetch profile details.';
-        this.toastService.show(msg, 'error');
-      }
-    });
+    this.router.navigate(['/availability'], { queryParams: { doctorId: doctor.id } });
   }
-
-  closeDetails(): void {
-    this.activeView.set('list');
-    this.selectedDoctor.set(null);
-    this.doctorDetails.set(null);
-    this.doctorAvailability.set([]);
-    this.blockedDates.set([]);
-    this.newBlockDate.set('');
-    this.slotCheckDate.set('');
-    this.slotCheckServiceId.set(null);
-    this.checkedSlots.set([]);
-  }
-
-  /**
-   * Helper to retrieve availability slots for a specific day of the week.
-   */
-  getDayWindows(dayOfWeek: number): AvailabilityWindowDto[] {
-    return this.doctorAvailability().filter(w => w.dayOfWeek === dayOfWeek);
-  }
-
-  // ==========================================
-  // ACTIVE STATE TOGGLE (SUSPEND/ACTIVATE)
-  // ==========================================
 
   /**
    * Toggles the active portal login state of a doctor.
@@ -712,15 +269,9 @@ export class DoctorsComponent implements OnInit {
     if (confirm(`Are you sure you want to ${actionText} portal access for Dr. ${doctor.name}?`)) {
       this.adminService.setActive(doctor.id, { isActive: newState }).subscribe({
         next: () => {
-          // Update local state value immediately
           this.doctors.update(list => 
             list.map(d => d.id === doctor.id ? { ...d, isActive: newState } : d)
           );
-          
-          if (this.selectedDoctor()?.id === doctor.id) {
-            this.selectedDoctor.update(d => d ? { ...d, isActive: newState } : null);
-          }
-          
           this.toastService.show(`Doctor account ${newState ? 'activated' : 'suspended'}.`, 'success');
         },
         error: (err) => {
@@ -740,7 +291,6 @@ export class DoctorsComponent implements OnInit {
     this.editingDoctor = null;
     this.doctorForm.reset({ name: '', email: '', phone: '', specialization: '', bio: '' });
     
-    // Enable email validator
     this.doctorForm.get('email')?.setValidators([Validators.required, Validators.email]);
     this.doctorForm.get('email')?.updateValueAndValidity();
     
@@ -751,7 +301,6 @@ export class DoctorsComponent implements OnInit {
     this.formMode.set('update');
     this.editingDoctor = doctor;
     
-    // Disable email validation because email cannot be edited
     this.doctorForm.get('email')?.clearValidators();
     this.doctorForm.get('email')?.updateValueAndValidity();
 
@@ -782,7 +331,6 @@ export class DoctorsComponent implements OnInit {
     this.isSubmitting.set(true);
 
     if (this.formMode() === 'create') {
-      // Execute REAL POST API call
       const req: CreateDoctorRequest = {
         name: val.name,
         email: val.email,
@@ -799,7 +347,7 @@ export class DoctorsComponent implements OnInit {
             tempPassword: created.temporaryPassword
           });
           this.closeFormModal();
-          this.loadDoctors(); // Reload list
+          this.loadDoctors();
           this.toastService.show(`Dr. ${val.name} added to staff.`, 'success');
         },
         error: (err) => {
@@ -809,7 +357,6 @@ export class DoctorsComponent implements OnInit {
         }
       });
     } else {
-      // Execute REAL PUT API call
       if (this.editingDoctor) {
         const req: UpdateStaffRequest = {
           name: val.name,
@@ -819,11 +366,11 @@ export class DoctorsComponent implements OnInit {
         };
 
         this.adminService.updateStaff(this.editingDoctor.id, req).subscribe({
-          next: (updated) => {
+          next: () => {
             this.isSubmitting.set(false);
             this.toastService.show(`Specialist profile saved.`, 'success');
             this.closeFormModal();
-            this.loadDoctors(); // Reload list
+            this.loadDoctors();
           },
           error: (err) => {
             this.isSubmitting.set(false);
@@ -835,10 +382,6 @@ export class DoctorsComponent implements OnInit {
     }
   }
 
-  /**
-   * MOCK DELETE: Backend does not expose a DELETE staff endpoint.
-   * Prompts and updates local state list.
-   */
   onDeleteDoctor(doctor: StaffDto): void {
     if (confirm(`Are you sure you want to delete the record for Dr. ${doctor.name}? This will remove them locally.`)) {
       this.doctors.update(list => list.filter(d => d.id !== doctor.id));
@@ -848,162 +391,5 @@ export class DoctorsComponent implements OnInit {
 
   clearCredentials(): void {
     this.tempCredentials.set(null);
-  }
-
-  // ==========================================
-  // OPERATIONAL AVAILABILITY ACTIONS
-  // ==========================================
-
-  openAvailabilityModal(): void {
-    this.initScheduleState();
-    
-    // Populate form state from current availability
-    this.doctorAvailability().forEach(window => {
-      this.scheduleState[window.dayOfWeek] = {
-        active: true,
-        startTime: window.startTime,
-        endTime: window.endTime
-      };
-    });
-
-    this.isAvailabilityFormOpen.set(true);
-  }
-
-  closeAvailabilityModal(): void {
-    this.isAvailabilityFormOpen.set(false);
-  }
-
-  toggleDayActive(dayOfWeek: number): void {
-    this.scheduleState[dayOfWeek].active = !this.scheduleState[dayOfWeek].active;
-  }
-
-  /**
-   * Saves weekly availability schedule back to the live API database.
-   */
-  saveAvailability(): void {
-    const doc = this.selectedDoctor();
-    if (!doc) return;
-
-    this.isSubmitting.set(true);
-    
-    // Construct request array from checked days
-    const availability: AvailabilityWindowDto[] = [];
-    for (let i = 0; i < 7; i++) {
-      const state = this.scheduleState[i];
-      if (state.active) {
-        availability.push({
-          dayOfWeek: i,
-          startTime: state.startTime,
-          endTime: state.endTime
-        });
-      }
-    }
-
-    // Call REAL PUT API endpoint to save schedule
-    this.doctorService.setAvailability(doc.id, availability).subscribe({
-      next: () => {
-        this.isSubmitting.set(false);
-        this.doctorAvailability.set(availability);
-        this.closeAvailabilityModal();
-        this.toastService.show('Weekly availability schedule updated successfully.', 'success');
-      },
-      error: (err) => {
-        this.isSubmitting.set(false);
-        const msg = err.error?.message || err.message || 'Failed to update schedule.';
-        this.toastService.show(msg, 'error');
-      }
-    });
-  }
-
-  // ==========================================
-  // AVAILABILITY EXTENSIONS ACTIONS
-  // ==========================================
-
-  getTodayDateString(): string {
-    const d = new Date();
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-
-  onBlockDate(): void {
-    const doc = this.selectedDoctor();
-    const date = this.newBlockDate();
-    
-    if (!doc || !date) return;
-
-    this.isBlockedDatesLoading.set(true);
-    this.doctorService.blockDate(doc.id, { date }).subscribe({
-      next: (blocked) => {
-        this.blockedDates.update(list => [...list, blocked].sort((a, b) => a.date.localeCompare(b.date)));
-        this.newBlockDate.set('');
-        this.isBlockedDatesLoading.set(false);
-        this.toastService.show(`Date ${date} blocked successfully.`, 'success');
-      },
-      error: (err) => {
-        this.isBlockedDatesLoading.set(false);
-        const msg = err.error?.message || err.message || 'Failed to block date.';
-        this.toastService.show(msg, 'error');
-      }
-    });
-  }
-
-  onUnblockDate(blocked: BlockedDateDto): void {
-    const doc = this.selectedDoctor();
-    if (!doc) return;
-
-    if (confirm(`Are you sure you want to unblock Dr. ${doc.name} on ${blocked.date}?`)) {
-      this.isBlockedDatesLoading.set(true);
-      this.doctorService.unblockDate(doc.id, blocked.date).subscribe({
-        next: () => {
-          this.blockedDates.update(list => list.filter(d => d.date !== blocked.date));
-          this.isBlockedDatesLoading.set(false);
-          this.toastService.show(`Date ${blocked.date} unblocked successfully.`, 'success');
-        },
-        error: (err) => {
-          this.isBlockedDatesLoading.set(false);
-          const msg = err.error?.message || err.message || 'Failed to unblock date.';
-          this.toastService.show(msg, 'error');
-        }
-      });
-    }
-  }
-
-  loadCheckedSlots(): void {
-    const doc = this.selectedDoctor();
-    const serviceId = this.slotCheckServiceId();
-    const date = this.slotCheckDate();
-    
-    if (!doc || !serviceId || !date) {
-      this.checkedSlots.set([]);
-      return;
-    }
-
-    this.isCheckingSlots.set(true);
-    this.doctorService.getSlots(doc.id, date, serviceId).subscribe({
-      next: (res) => {
-        this.checkedSlots.set(res.slots || []);
-        this.isCheckingSlots.set(false);
-      },
-      error: (err) => {
-        this.isCheckingSlots.set(false);
-        const msg = err.error?.message || err.message || 'Failed to check slots.';
-        this.toastService.show(msg, 'error');
-      }
-    });
-  }
-
-  // ==========================================
-  // UTILITY INITIALS HELPER
-  // ==========================================
-
-  getInitials(name: string): string {
-    if (!name) return '?';
-    const parts = name.trim().split(/\s+/);
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-    return parts[0][0].toUpperCase();
   }
 }

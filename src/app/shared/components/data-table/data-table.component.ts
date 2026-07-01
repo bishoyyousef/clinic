@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { InitialsPipe } from '../../pipes/initials.pipe';
 
 export interface TableColumn {
   key: string;
@@ -11,7 +12,7 @@ export interface TableColumn {
 @Component({
   selector: 'app-data-table',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, InitialsPipe],
   template: `
     <div class="table-container">
       <table class="data-table">
@@ -43,7 +44,7 @@ export interface TableColumn {
               <ng-container [ngSwitch]="col.type">
                 <!-- Avatar cells -->
                 <div *ngSwitchCase="'avatar'" class="avatar-cell">
-                  <div class="avatar-circle">{{ getInitials(row[col.key]) }}</div>
+                  <div class="avatar-circle">{{ row[col.key] | initials }}</div>
                   <span class="avatar-name">{{ row[col.key] }}</span>
                 </div>
                 <!-- EGP Currency cells -->
@@ -173,12 +174,4 @@ export class DataTableComponent {
     this.sortChange.emit({ key: column.key, direction });
   }
 
-  getInitials(name: string): string {
-    if (!name) return '?';
-    const parts = name.trim().split(/\s+/);
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-    return parts[0][0].toUpperCase();
-  }
 }

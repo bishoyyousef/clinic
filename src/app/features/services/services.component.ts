@@ -12,6 +12,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
 import { ModalComponent } from '../../shared/components/modal/modal.component';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { InitialsPipe } from '../../shared/pipes/initials.pipe';
 
 @Component({
   selector: 'app-services',
@@ -24,7 +25,8 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
     ButtonComponent,
     ModalComponent,
     LoadingSpinnerComponent,
-    EmptyStateComponent
+    EmptyStateComponent,
+    InitialsPipe
   ],
   template: `
     <div class="services-container">
@@ -135,7 +137,7 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
         <!-- Assigned Specialist -->
         <div *ngSwitchCase="'doctorName'">
           <span class="specialist-badge">
-            <span class="specialist-avatar">{{ getInitials(row.doctorName || '') }}</span>
+            <span class="specialist-avatar">{{ row.doctorName | initials }}</span>
             Dr. {{ row.doctorName || 'Unassigned' }}
           </span>
         </div>
@@ -341,12 +343,4 @@ export class ServicesComponent implements OnInit {
     }
   }
 
-  getInitials(name: string): string {
-    if (!name) return '?';
-    const parts = name.trim().split(/\s+/);
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-    return parts[0][0].toUpperCase();
-  }
 }

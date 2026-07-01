@@ -1,6 +1,8 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
+import { InitialsPipe } from '../../shared/pipes/initials.pipe';
 
 interface NavItem {
   path: string;
@@ -12,7 +14,7 @@ interface NavItem {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterLinkActive, InitialsPipe],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.css'
 })
@@ -20,8 +22,7 @@ export class SidebarComponent {
   @Input() mobileOpen = false;
   @Output() closeMobile = new EventEmitter<void>();
 
-  // Mocking the user role as 'Admin' by default for UI shell preview
-  userRole = 'Admin';
+  authService = inject(AuthService);
 
   navItems: NavItem[] = [
     {
@@ -81,7 +82,8 @@ export class SidebarComponent {
   ];
 
   get filteredNavItems(): NavItem[] {
-    return this.navItems.filter(item => item.roles.includes(this.userRole));
+    const role = this.authService.role();
+    return this.navItems.filter(item => role && item.roles.includes(role));
   }
 
   onLinkClick(): void {

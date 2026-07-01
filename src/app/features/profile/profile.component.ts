@@ -5,6 +5,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { UpdateProfileRequest, ChangePasswordRequest } from '../../core/models/auth.model';
 import { ButtonComponent } from '../../shared/components/button/button.component';
+import { InitialsPipe } from '../../shared/pipes/initials.pipe';
 
 // Custom password match validator at the FormGroup level
 const passwordMatchValidator = (group: FormGroup): { [key: string]: boolean } | null => {
@@ -39,7 +40,8 @@ const passwordMatchValidator = (group: FormGroup): { [key: string]: boolean } | 
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    ButtonComponent
+    ButtonComponent,
+    InitialsPipe
   ],
   template: `
     <div class="profile-container">
@@ -55,7 +57,7 @@ const passwordMatchValidator = (group: FormGroup): { [key: string]: boolean } | 
         <!-- Left Column: User Summary Card -->
         <div class="summary-card">
           <div class="avatar-section">
-            <div class="avatar-large">{{ getInitials(user()?.name || '') }}</div>
+            <div class="avatar-large">{{ user()?.name | initials }}</div>
             <h2 class="user-name">{{ user()?.name || 'Loading...' }}</h2>
             <span class="role-badge" [class]="user()?.role?.toLowerCase() || ''">
               {{ user()?.role }}
@@ -304,12 +306,4 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  getInitials(name: string): string {
-    if (!name) return '?';
-    const parts = name.trim().split(/\s+/);
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-    return parts[0][0].toUpperCase();
-  }
 }

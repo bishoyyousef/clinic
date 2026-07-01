@@ -9,6 +9,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
 import { ModalComponent } from '../../shared/components/modal/modal.component';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { InitialsPipe } from '../../shared/pipes/initials.pipe';
 
 @Component({
   selector: 'app-staff',
@@ -21,7 +22,8 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
     ButtonComponent,
     ModalComponent,
     LoadingSpinnerComponent,
-    EmptyStateComponent
+    EmptyStateComponent,
+    InitialsPipe
   ],
   template: `
     <div class="staff-container">
@@ -163,7 +165,7 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
       <ng-container [ngSwitch]="column.key">
         <!-- Name (Avatar representation) -->
         <div *ngSwitchCase="'name'" class="staff-avatar-cell">
-          <div class="staff-avatar-circle">{{ getInitials(row.name || '') }}</div>
+          <div class="staff-avatar-circle">{{ row.name | initials }}</div>
           <div class="staff-name-details">
             <span class="staff-name-text">{{ row.name }}</span>
             <span class="staff-spec-text" *ngIf="row.role === 'Doctor'">{{ row.specialization }}</span>
@@ -359,12 +361,4 @@ export class StaffComponent implements OnInit {
     }
   }
 
-  getInitials(name: string): string {
-    if (!name) return '?';
-    const parts = name.trim().split(/\s+/);
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-    return parts[0][0].toUpperCase();
-  }
 }

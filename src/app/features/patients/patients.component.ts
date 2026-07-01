@@ -11,6 +11,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
 import { ModalComponent } from '../../shared/components/modal/modal.component';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { InitialsPipe } from '../../shared/pipes/initials.pipe';
 
 @Component({
   selector: 'app-patients',
@@ -24,7 +25,8 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
     ButtonComponent,
     ModalComponent,
     LoadingSpinnerComponent,
-    EmptyStateComponent
+    EmptyStateComponent,
+    InitialsPipe
   ],
   template: `
     <div class="patients-container">
@@ -116,7 +118,7 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
           
           <div class="patient-summary-banner">
             <div class="patient-avatar">
-              {{ getInitials(selectedPatient()?.name || '') }}
+              {{ selectedPatient()?.name | initials }}
             </div>
             <div class="patient-meta">
               <h2 class="patient-name">{{ selectedPatient()?.name }}</h2>
@@ -914,12 +916,4 @@ export class PatientsComponent implements OnInit {
   // UTILITY HELPERS
   // ==========================================
 
-  getInitials(name: string): string {
-    if (!name) return '?';
-    const parts = name.trim().split(/\s+/);
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-    return parts[0][0].toUpperCase();
-  }
 }

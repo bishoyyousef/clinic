@@ -111,9 +111,31 @@
 }
 
 .sidebar-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: var(--s4) var(--s6);
   border-top: 1px solid var(--border);
   background-color: var(--surface-2);
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-sm);
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all var(--dur) var(--ease);
+}
+
+.logout-btn:hover {
+  color: var(--danger);
+  background-color: var(--danger-soft);
 }
 
 .user-badge {

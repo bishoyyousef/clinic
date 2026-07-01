@@ -1,0 +1,340 @@
+<div class="doctors-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Specialist Availability</h1>
+      <p class="page-subtitle">Configure doctor weekly shifts, block calendar dates, and inspect live slots</p>
+    </div>
+  </div>
+
+  <!-- Specialist Selector Dropdown -->
+  <div class="filters-row" style="margin-bottom: var(--s2);">
+    <div class="filter-item">
+      <label for="doctor-select" style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: var(--s1.5);">Select Specialist</label>
+      <select 
+        id="doctor-select" 
+        class="filter-control" 
+        [ngModel]="selectedDoctorId()" 
+        (ngModelChange)="onDoctorSelect($event)"
+        style="height: 38px; padding: 0 var(--s3); border: 1px solid var(--border); border-radius: var(--r-sm); font-size: 0.875rem; background-color: var(--bg); color: var(--text); width: 100%; transition: all var(--dur) var(--ease);"
+      >
+        <option value="" disabled selected>Select a medical specialist...</option>
+        <option *ngFor="let doc of doctors()" [value]="doc.id">
+          Dr. {{ doc.name }} ({{ doc.specialization }})
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="isDetailsLoading() && !selectedDoctor()">
+    <app-loading-spinner size="lg"></app-loading-spinner>
+    <p class="loading-text">Loading specialist details...</p>
+  </div>
+
+  <!-- Empty state when no doctor selected -->
+  <div *ngIf="!isDetailsLoading() && !selectedDoctor()">
+    <app-empty-state
+      title="No Specialist Selected"
+      message="Please select a medical specialist from the dropdown selector above to manage their operational calendar."
+      icon="default">
+    </app-empty-state>
+  </div>
+
+  <!-- Main Details Content -->
+  <div class="profile-layout" *ngIf="!isDetailsLoading() && selectedDoctor()">
+    <!-- Left side: Profile summary card -->
+    <div class="profile-summary-card">
+      <div class="avatar-banner" style="display: flex; flex-direction: column; align-items: center;">
+        <div class="avatar-circle-lg">
+          {{ selectedDoctor()?.name | initials }}
+        </div>
+        <h2 class="doctor-name">Dr. {{ selectedDoctor()?.name }}</h2>
+        <span class="spec-label">{{ selectedDoctor()?.specialization }}</span>
+      </div>
+      
+      <div class="doctor-ratings-stats" *ngIf="doctorDetails()">
+        <div class="rating-box">
+          <span class="rating-num">★ {{ doctorDetails()?.rating || '5.0' }}</span>
+          <span class="rating-lbl">({{ doctorDetails()?.reviewCount || 0 }} reviews)</span>
+        </div>
+        <div class="experience-box">
+          <span class="experience-num">{{ doctorDetails()?.yearsExperience || 0 }} Yrs</span>
+          <span class="experience-lbl">Experience</span>
+        </div>
+      </div>
+
+      <div class="profile-contact-info">
+        <div class="contact-item">
+          <span class="contact-lbl">Email Address</span>
+          <span class="contact-val">{{ selectedDoctor()?.email }}</span>
+        </div>
+        <div class="contact-item">
+          <span class="contact-lbl">Phone Number</span>
+          <span class="contact-val">{{ selectedDoctor()?.phone }}</span>
+        </div>
+        <div class="contact-item">
+          <span class="contact-lbl">Portal Access Status</span>
+          <span class="portal-status-badge" [class.active]="selectedDoctor()?.isActive">
+            {{ selectedDoctor()?.isActive ? 'Active Account' : 'Suspended Account' }}
+          </span>
+        </div>
+      </div>
+      
+      <div class="bio-section" *ngIf="doctorDetails()?.bio">
+        <h4 class="section-title">Biography</h4>
+        <p class="bio-text">"{{ doctorDetails()?.bio }}"</p>
+      </div>
+    </div>
+
+    <!-- Right side: Weekly availability schedule & extensions -->
+    <div class="right-column-layout">
+      <!-- Weekly availability schedule card -->
+      <div class="availability-card">
+        <div class="availability-header">
+          <div>
+            <h3 class="card-title">Weekly Operational Availability</h3>
+            <p class="card-subtitle">View and configure the active weekly time windows for patient bookings</p>
+          </div>
+          <app-button (click)="openAvailabilityModal()">
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" style="margin-right: 6px;">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            Configure Schedule
+          </app-button>
+        </div>
+
+        <!-- Availability List Grid -->
+        <div class="schedule-grid">
+          <div class="schedule-row" *ngFor="let day of weekDays">
+            <span class="day-name">{{ day.label }}</span>
+            
+            <div class="day-hours">
+              <ng-container *ngIf="getDayWindows(day.value).length > 0; else offDayTmpl">
+                <div class="hours-pills">
+                  <div class="hours-pill" *ngFor="let window of getDayWindows(day.value)">
+                    <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" class="clock-icon">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <span>{{ window.startTime | slice:0:5 }} - {{ window.endTime | slice:0:5 }}</span>
+                  </div>
+                </div>
+              </ng-container>
+              <ng-template #offDayTmpl>
+                <span class="off-label">Off Duty</span>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Extensions: Blocked Dates & Slots Checker -->
+      <div class="extensions-grid">
+        <!-- Blocked Dates Card -->
+        <div class="extension-card blocked-dates-card">
+          <div class="extension-header">
+            <div>
+              <h3 class="card-title">Blocked Calendar Dates</h3>
+              <p class="card-subtitle">Temporarily block dates for vacations or holidays</p>
+            </div>
+          </div>
+
+          <div class="blocked-dates-content">
+            <!-- Block Date Form -->
+            <div class="block-date-form">
+              <div class="input-wrapper">
+                <input 
+                  type="date" 
+                  [min]="getTodayDateString()"
+                  [value]="newBlockDate()" 
+                  (input)="newBlockDate.set($any($event.target).value)"
+                  class="date-input"
+                />
+              </div>
+              <app-button 
+                [disabled]="!newBlockDate() || isBlockedDatesLoading()" 
+                [loading]="isBlockedDatesLoading()"
+                (click)="onBlockDate()"
+              >
+                Block Date
+              </app-button>
+            </div>
+
+            <!-- Blocked Dates List -->
+            <div class="blocked-dates-list-wrapper">
+              <div class="loading-state-sm" *ngIf="isBlockedDatesLoading() && blockedDates().length === 0">
+                <app-loading-spinner size="sm"></app-loading-spinner>
+              </div>
+
+              <ul class="blocked-dates-list" *ngIf="blockedDates().length > 0">
+                <li class="blocked-date-item" *ngFor="let block of blockedDates()">
+                  <div class="blocked-date-info">
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" class="calendar-icon">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                      <line x1="16" y1="2" x2="16" y2="6"></line>
+                      <line x1="8" y1="2" x2="8" y2="6"></line>
+                      <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span class="blocked-date-val">{{ block.date | date:'mediumDate' }}</span>
+                    <span class="blocked-reason-badge" *ngIf="block.reason">{{ block.reason }}</span>
+                  </div>
+                  <button 
+                    class="unblock-btn" 
+                    (click)="onUnblockDate(block)" 
+                    title="Unblock date"
+                    [disabled]="isBlockedDatesLoading()"
+                  >
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+
+              <p class="no-blocked-dates" *ngIf="blockedDates().length === 0 && !isBlockedDatesLoading()">
+                No blocked dates scheduled.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Slots Checker Card -->
+        <div class="extension-card slots-checker-card">
+          <div class="extension-header">
+            <div>
+              <h3 class="card-title">Live Slots Checker</h3>
+              <p class="card-subtitle">Query real-time 15-minute slot availability</p>
+            </div>
+          </div>
+
+          <div class="slots-checker-content">
+            <div class="slots-checker-controls">
+              <div class="form-group">
+                <label>Select Service</label>
+                <div class="input-wrapper">
+                  <select 
+                    [value]="slotCheckServiceId() || ''" 
+                    (change)="slotCheckServiceId.set(+$any($event.target).value); loadCheckedSlots()"
+                  >
+                    <option value="" disabled selected>Select a service...</option>
+                    <option *ngFor="let s of doctorDetails()?.services" [value]="s.id">
+                      {{ s.name }} ({{ s.durationMinutes }}m)
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Select Date</label>
+                <div class="input-wrapper">
+                  <input 
+                    type="date" 
+                    [value]="slotCheckDate()" 
+                    (change)="slotCheckDate.set($any($event.target).value); loadCheckedSlots()"
+                    class="date-input"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="slots-display-area">
+              <div class="loading-state-sm" *ngIf="isCheckingSlots()">
+                <app-loading-spinner size="sm"></app-loading-spinner>
+                <p class="loading-text-sm">Querying available slots...</p>
+              </div>
+
+              <ng-container *ngIf="!isCheckingSlots()">
+                <div class="slots-prompt" *ngIf="!slotCheckServiceId()">
+                  <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" class="prompt-icon">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                  <span>Please select a clinic service to query slot availability.</span>
+                </div>
+
+                <div class="slots-grid" *ngIf="slotCheckServiceId() && checkedSlots().length > 0">
+                  <div class="slot-pill" *ngFor="let slot of checkedSlots()">
+                    <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" class="pill-icon">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <span>{{ slot }}</span>
+                  </div>
+                </div>
+
+                <div class="no-slots-warning" *ngIf="slotCheckServiceId() && checkedSlots().length === 0">
+                  <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" class="warning-icon">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                  <span>No available booking slots on this date.</span>
+                </div>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Configure Weekly Schedule Modal -->
+  <app-modal
+    [isOpen]="isAvailabilityFormOpen()"
+    title="Configure Weekly Schedule"
+    [hasFooter]="true"
+    size="lg"
+    (close)="closeAvailabilityModal()">
+    
+    <div class="availability-editor">
+      <p class="editor-desc">Specify the start and end operational hours for each day. Days that are unchecked represent Off Duty status.</p>
+      
+      <div class="editor-rows">
+        <div class="editor-row" *ngFor="let day of weekDays; let i = index">
+          <label class="day-toggle">
+            <input 
+              type="checkbox" 
+              [checked]="scheduleState[day.value].active"
+              (change)="toggleDayActive(day.value)"
+              class="editor-checkbox"
+            />
+            <span class="day-label">{{ day.label }}</span>
+          </label>
+
+          <div class="hours-inputs" *ngIf="scheduleState[day.value].active">
+            <div class="time-input-group">
+              <span class="time-lbl">Start:</span>
+              <input 
+                type="time" 
+                [(ngModel)]="scheduleState[day.value].startTime" 
+                class="time-control"
+              />
+            </div>
+            <div class="time-input-group">
+              <span class="time-lbl">End:</span>
+              <input 
+                type="time" 
+                [(ngModel)]="scheduleState[day.value].endTime" 
+                class="time-control"
+              />
+            </div>
+          </div>
+          <div class="hours-off-message" *ngIf="!scheduleState[day.value].active">
+            <span>Off Duty</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div modal-footer>
+      <app-button variant="secondary" (click)="closeAvailabilityModal()" [disabled]="isSubmitting()">Cancel</app-button>
+      <app-button (click)="saveAvailability()" [loading]="isSubmitting()">
+        Save Schedule
+      </app-button>
+    </div>
+  </app-modal>
+</div>

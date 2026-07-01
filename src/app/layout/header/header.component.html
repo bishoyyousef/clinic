@@ -45,7 +45,7 @@
 
     <!-- Profile Action trigger -->
     <div class="profile-trigger">
-      <div class="user-avatar-small">A</div>
+      <div class="user-avatar-small">{{ authService.currentUser()?.name | initials }}</div>
     </div>
   </div>
 </header>
