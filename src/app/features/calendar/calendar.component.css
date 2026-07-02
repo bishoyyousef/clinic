@@ -8,7 +8,8 @@
 /* Filter Bar Styling */
 .filters-row {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
+  justify-content: space-between;
   flex-wrap: wrap;
   gap: var(--s4);
   background-color: var(--surface);
@@ -18,12 +19,24 @@
   box-shadow: var(--shadow-sm);
 }
 
+.filters-left {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: var(--s4);
+  flex: 1;
+}
+
+.filters-right {
+  display: flex;
+  align-items: center;
+}
+
 .filter-item {
   display: flex;
   flex-direction: column;
   gap: var(--s1.5);
   min-width: 180px;
-  flex: 1;
 }
 
 @media (max-width: 768px) {
@@ -68,6 +81,7 @@
   .reset-btn-container {
     width: 100%;
   }
+
   .reset-btn-container ::ng-deep app-button,
   .reset-btn-container ::ng-deep button {
     width: 100%;
@@ -242,19 +256,53 @@
 }
 
 /* Status-specific card borders */
-.appointment-card.confirmed { border-left-color: var(--accent); }
-.appointment-card.arrived { border-left-color: var(--info); }
-.appointment-card.completed { border-left-color: var(--success); }
-.appointment-card.noshow { border-left-color: var(--warning); }
-.appointment-card.cancelled { border-left-color: var(--danger); }
-.appointment-card.pendingpayment { border-left-color: var(--border); }
+.appointment-card.confirmed {
+  border-left-color: var(--accent);
+}
 
-[dir="rtl"] .appointment-card.confirmed { border-right-color: var(--accent); }
-[dir="rtl"] .appointment-card.arrived { border-right-color: var(--info); }
-[dir="rtl"] .appointment-card.completed { border-right-color: var(--success); }
-[dir="rtl"] .appointment-card.noshow { border-right-color: var(--warning); }
-[dir="rtl"] .appointment-card.cancelled { border-right-color: var(--danger); }
-[dir="rtl"] .appointment-card.pendingpayment { border-right-color: var(--border); }
+.appointment-card.arrived {
+  border-left-color: var(--info);
+}
+
+.appointment-card.completed {
+  border-left-color: var(--success);
+}
+
+.appointment-card.noshow {
+  border-left-color: var(--warning);
+}
+
+.appointment-card.cancelled {
+  border-left-color: var(--danger);
+}
+
+.appointment-card.pendingpayment {
+  border-left-color: var(--border);
+}
+
+[dir="rtl"] .appointment-card.confirmed {
+  border-right-color: var(--accent);
+}
+
+[dir="rtl"] .appointment-card.arrived {
+  border-right-color: var(--info);
+}
+
+[dir="rtl"] .appointment-card.completed {
+  border-right-color: var(--success);
+}
+
+[dir="rtl"] .appointment-card.noshow {
+  border-right-color: var(--warning);
+}
+
+[dir="rtl"] .appointment-card.cancelled {
+  border-right-color: var(--danger);
+}
+
+[dir="rtl"] .appointment-card.pendingpayment {
+  border-right-color: var(--border);
+}
 
 /* Card content details */
 .card-time {
@@ -306,12 +354,29 @@
   letter-spacing: 0.02em;
 }
 
-.appointment-card.confirmed .status-indicator-text { color: var(--accent); }
-.appointment-card.arrived .status-indicator-text { color: var(--info); }
-.appointment-card.completed .status-indicator-text { color: var(--success); }
-.appointment-card.noshow .status-indicator-text { color: var(--warning); }
-.appointment-card.cancelled .status-indicator-text { color: var(--danger); }
-.appointment-card.pendingpayment .status-indicator-text { color: var(--text-muted); }
+.appointment-card.confirmed .status-indicator-text {
+  color: var(--accent);
+}
+
+.appointment-card.arrived .status-indicator-text {
+  color: var(--info);
+}
+
+.appointment-card.completed .status-indicator-text {
+  color: var(--success);
+}
+
+.appointment-card.noshow .status-indicator-text {
+  color: var(--warning);
+}
+
+.appointment-card.cancelled .status-indicator-text {
+  color: var(--danger);
+}
+
+.appointment-card.pendingpayment .status-indicator-text {
+  color: var(--text-muted);
+}
 
 /* Empty Day State */
 .empty-day-message {

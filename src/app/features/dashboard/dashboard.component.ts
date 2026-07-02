@@ -10,6 +10,7 @@ import { StatusBadgeComponent } from '../../shared/components/status-badge/statu
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
+import { CurrencyEgpPipe } from '../../shared/pipes/currency-egp.pipe';
 
 @Component({
   selector: 'app-dashboard',
@@ -21,7 +22,8 @@ import { ButtonComponent } from '../../shared/components/button/button.component
     StatusBadgeComponent,
     LoadingSpinnerComponent,
     EmptyStateComponent,
-    ButtonComponent
+    ButtonComponent,
+    CurrencyEgpPipe
   ],
   template: `
     <div class="dashboard-container">
@@ -151,7 +153,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             <div class="stat-card-body">
               <div class="stat-info">
                 <span class="stat-label">Today's Revenue</span>
-                <span class="stat-value revenue-value">{{ stats()?.todaysRevenue || 0 | number:'1.2-2' }} EGP</span>
+                <span class="stat-value revenue-value">{{ stats()?.todaysRevenue || 0 | currencyEgp }}</span>
               </div>
               <div class="stat-icon-wrapper stat-icon-revenue">
                 <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.2" fill="none">

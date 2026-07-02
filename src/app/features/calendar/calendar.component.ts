@@ -2,7 +2,8 @@ import { Component, OnInit, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { forkJoin, Observable } from 'rxjs';
+import { forkJoin, Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { AppointmentService } from '../../core/services/appointment.service';
 import { DoctorService } from '../../core/services/doctor.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -12,6 +13,8 @@ import { StatusBadgeComponent } from '../../shared/components/status-badge/statu
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
+import { CurrencyEgpPipe } from '../../shared/pipes/currency-egp.pipe';
+import { DataTableComponent, TableColumn } from '../../shared/components/data-table/data-table.component';
 
 @Component({
   selector: 'app-calendar',
@@ -23,7 +26,9 @@ import { ModalComponent } from '../../shared/components/modal/modal.component';
     StatusBadgeComponent,
     LoadingSpinnerComponent,
     ButtonComponent,
-    ModalComponent
+    ModalComponent,
+    CurrencyEgpPipe,
+    DataTableComponent
   ],
   templateUrl: './calendar.component.html',
   styleUrl: './calendar.component.css'
@@ -37,7 +42,7 @@ export class CalendarComponent implements OnInit {
   filterDate = signal<string>(new Date().toISOString().split('T')[0]);
   filterDoctorId = signal<string>('');
   filterStatus = signal<string>('');
-  
+
   appointments = signal<AppointmentDto[]>([]);
   doctors = signal<DoctorListItemDto[]>([]);
   isLoading = signal<boolean>(false);
@@ -68,17 +73,31 @@ export class CalendarComponent implements OnInit {
     { value: 'PendingPayment', label: 'Pending Payment' }
   ];
 
+  // Table Columns Definition
+  columns: TableColumn[] = [
+    { key: 'time', label: 'TIME', type: 'custom' },
+    { key: 'patient', label: 'PATIENT', type: 'custom' },
+    { key: 'doctor', label: 'DOCTOR', type: 'custom' },
+    { key: 'service', label: 'SERVICE', type: 'custom' },
+    { key: 'status', label: 'STATUS', type: 'custom' },
+    { key: 'payment', label: 'PAYMENT', type: 'custom' },
+    { key: 'actions', label: '', type: 'custom' }
+  ];
+
   /**
    * Computes the 7 dates of the active week (Monday to Sunday) based on the selected filterDate.
    */
   weekDays = computed(() => {
     const dateStr = this.filterDate();
     if (!dateStr) return [];
-    
-    const current = new Date(dateStr);
+
+    // Parse in local timezone at noon to avoid DST midnight crossing date-shifts
+    const parts = dateStr.split('-');
+    const current = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]), 12, 0, 0);
+
     const day = current.getDay(); // 0 = Sunday, 1 = Monday, etc.
     const diffToMonday = day === 0 ? -6 : 1 - day;
-    
+
     const monday = new Date(current);
     monday.setDate(current.getDate() + diffToMonday);
 
@@ -86,15 +105,15 @@ export class CalendarComponent implements OnInit {
     for (let i = 0; i < 7; i++) {
       const d = new Date(monday);
       d.setDate(monday.getDate() + i);
-      
+
       const year = d.getFullYear();
       const month = String(d.getMonth() + 1).padStart(2, '0');
       const date = String(d.getDate()).padStart(2, '0');
       const dateStrFormatted = `${year}-${month}-${date}`;
-      
+
       const dayLabel = d.toLocaleDateString('en-US', { weekday: 'short' });
       const dayNum = d.getDate();
-      
+
       days.push({
         dateStr: dateStrFormatted,
         label: dayLabel,
@@ -111,13 +130,13 @@ export class CalendarComponent implements OnInit {
   weekRangeLabel = computed(() => {
     const days = this.weekDays();
     if (days.length === 0) return '';
-    
+
     const first = new Date(days[0].dateStr);
     const last = new Date(days[6].dateStr);
-    
+
     const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
     const firstLabel = first.toLocaleDateString('en-US', options);
-    
+
     const year = first.getFullYear();
     if (first.getMonth() === last.getMonth()) {
       return `${firstLabel} – ${last.getDate()}, ${year}`;
@@ -163,11 +182,13 @@ export class CalendarComponent implements OnInit {
       return;
     }
 
-    const requests = days.map(day => 
+    const requests = days.map(day =>
       this.appointmentService.getCalendar(
         day.dateStr,
         doctorParam || undefined,
         statusParam || undefined
+      ).pipe(
+        catchError(() => of([] as AppointmentDto[])) // Robust fall-back so single-day failures don't block the week
       )
     );
 
@@ -179,7 +200,7 @@ export class CalendarComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading.set(false);
-        const msg = err.error?.message || err.message || 'Failed to load weekly appointments.';
+        const msg = err?.error?.message || err?.message || 'Failed to load weekly appointments.';
         this.errorMessage.set(msg);
         this.toastService.show(msg, 'error');
       }
@@ -239,7 +260,10 @@ export class CalendarComponent implements OnInit {
    */
   getAppointmentsForDay(dateStr: string): AppointmentDto[] {
     return this.appointments()
-      .filter(app => app.date === dateStr)
+      .filter(app => {
+        if (!app.date) return false;
+        return app.date === dateStr || app.date.startsWith(dateStr);
+      })
       .sort((a, b) => a.startTime.localeCompare(b.startTime));
   }
 
@@ -333,7 +357,7 @@ export class CalendarComponent implements OnInit {
     const app = this.activeAppointment();
     if (!app) return;
 
-    this.rescheduleDate.set(app.date);
+    this.rescheduleDate.set(app.date ? app.date.split('T')[0] : '');
     this.selectedSlot.set('');
     this.availableSlots.set([]);
     this.isRescheduleOpen.set(true);

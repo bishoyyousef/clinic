@@ -22,6 +22,7 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         canActivate: [roleGuard(['Admin', 'Receptionist'])],
+        data: { title: 'Dashboard' },
         loadComponent: () =>
           import('./features/dashboard/dashboard.component').then(
             (m) => m.DashboardComponent
@@ -30,6 +31,7 @@ export const routes: Routes = [
       {
         path: 'patients',
         canActivate: [roleGuard(['Admin', 'Receptionist', 'Doctor'])],
+        data: { title: 'Patients' },
         loadComponent: () =>
           import('./features/patients/patients.component').then(
             (m) => m.PatientsComponent
@@ -38,6 +40,7 @@ export const routes: Routes = [
       {
         path: 'doctors',
         canActivate: [roleGuard(['Admin', 'Receptionist'])],
+        data: { title: 'Doctors' },
         loadComponent: () =>
           import('./features/doctors/doctors.component').then(
             (m) => m.DoctorsComponent
@@ -46,6 +49,7 @@ export const routes: Routes = [
       {
         path: 'availability',
         canActivate: [roleGuard(['Admin', 'Receptionist'])],
+        data: { title: 'Availability' },
         loadComponent: () =>
           import('./features/availability/availability.component').then(
             (m) => m.AvailabilityComponent
@@ -54,6 +58,7 @@ export const routes: Routes = [
       {
         path: 'services',
         canActivate: [roleGuard(['Admin', 'Receptionist'])],
+        data: { title: 'Services' },
         loadComponent: () =>
           import('./features/services/services.component').then(
             (m) => m.ServicesComponent
@@ -62,6 +67,7 @@ export const routes: Routes = [
       {
         path: 'appointments',
         canActivate: [roleGuard(['Admin', 'Receptionist'])],
+        data: { title: 'Appointments' },
         loadComponent: () =>
           import('./features/appointments/appointments.component').then(
             (m) => m.AppointmentsComponent
@@ -70,6 +76,7 @@ export const routes: Routes = [
       {
         path: 'calendar',
         canActivate: [roleGuard(['Admin', 'Receptionist'])],
+        data: { title: 'Day calendar' },
         loadComponent: () =>
           import('./features/calendar/calendar.component').then(
             (m) => m.CalendarComponent
@@ -78,6 +85,7 @@ export const routes: Routes = [
       {
         path: 'walk-in',
         canActivate: [roleGuard(['Admin', 'Receptionist'])],
+        data: { title: 'Walk-in' },
         loadComponent: () =>
           import('./features/walk-in/walk-in.component').then(
             (m) => m.WalkInComponent
@@ -86,6 +94,7 @@ export const routes: Routes = [
       {
         path: 'settings',
         canActivate: [roleGuard(['Admin', 'Receptionist', 'Doctor'])],
+        data: { title: 'Settings' },
         loadComponent: () =>
           import('./features/settings/settings.component').then(
             (m) => m.SettingsComponent
@@ -94,6 +103,7 @@ export const routes: Routes = [
       {
         path: 'staff',
         canActivate: [roleGuard(['Admin'])],
+        data: { title: 'Staff' },
         loadComponent: () =>
           import('./features/staff/staff.component').then(
             (m) => m.StaffComponent
@@ -102,6 +112,7 @@ export const routes: Routes = [
       {
         path: 'reports',
         canActivate: [roleGuard(['Admin'])],
+        data: { title: 'Reports' },
         loadComponent: () =>
           import('./features/reports/reports.component').then(
             (m) => m.ReportsComponent
@@ -110,6 +121,7 @@ export const routes: Routes = [
       {
         path: 'profile',
         canActivate: [roleGuard(['Admin', 'Receptionist', 'Doctor'])],
+        data: { title: 'Profile' },
         loadComponent: () =>
           import('./features/profile/profile.component').then(
             (m) => m.ProfileComponent

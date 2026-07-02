@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { API_BASE_URL } from '../config';
 import { 
   DoctorListItemDto, 
@@ -26,7 +27,9 @@ export class DoctorService {
     if (specialization) {
       params = params.set('specialization', specialization);
     }
-    return this.http.get<DoctorListItemDto[]>(`${API_BASE_URL}/doctors`, { params });
+    return this.http.get<any>(`${API_BASE_URL}/doctors`, { params }).pipe(
+      map(res => Array.isArray(res) ? res : (res?.items || []))
+    );
   }
 
   /**

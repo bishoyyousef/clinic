@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { SettingsService } from '../../core/services/settings.service';
 import { InitialsPipe } from '../../shared/pipes/initials.pipe';
 
 interface NavItem {
@@ -23,6 +24,7 @@ export class SidebarComponent {
   @Output() closeMobile = new EventEmitter<void>();
 
   authService = inject(AuthService);
+  settingsService = inject(SettingsService);
 
   navItems: NavItem[] = [
     {
@@ -33,13 +35,19 @@ export class SidebarComponent {
     },
     {
       path: '/calendar',
-      label: 'Calendar',
+      label: 'Day calendar',
       icon: 'calendar',
       roles: ['Admin', 'Receptionist']
     },
     {
+      path: '/appointments',
+      label: 'Appointments',
+      icon: 'appointments',
+      roles: ['Admin', 'Receptionist']
+    },
+    {
       path: '/walk-in',
-      label: 'Walk-in Booking',
+      label: 'Walk-in',
       icon: 'walk-in',
       roles: ['Admin', 'Receptionist']
     },

@@ -15,6 +15,7 @@ import { ServiceDto } from '../../core/models/service.model';
 import { AppointmentService } from '../../core/services/appointment.service';
 import { WalkInRequest } from '../../core/models/appointment.model';
 import { ToastService } from '../../core/services/toast.service';
+import { CurrencyEgpPipe } from '../../shared/pipes/currency-egp.pipe';
 
 @Component({
   selector: 'app-walk-in',
@@ -23,7 +24,8 @@ import { ToastService } from '../../core/services/toast.service';
     CommonModule,
     FormsModule,
     ButtonComponent,
-    LoadingSpinnerComponent
+    LoadingSpinnerComponent,
+    CurrencyEgpPipe
   ],
   templateUrl: './walk-in.component.html',
   styleUrl: './walk-in.component.css'

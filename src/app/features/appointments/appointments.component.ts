@@ -14,6 +14,7 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
+import { CurrencyEgpPipe } from '../../shared/pipes/currency-egp.pipe';
 
 @Component({
   selector: 'app-appointments',
@@ -27,7 +28,8 @@ import { ModalComponent } from '../../shared/components/modal/modal.component';
     LoadingSpinnerComponent,
     EmptyStateComponent,
     ButtonComponent,
-    ModalComponent
+    ModalComponent,
+    CurrencyEgpPipe
   ],
   templateUrl: './appointments.component.html',
   styleUrl: './appointments.component.css'
@@ -270,7 +272,7 @@ export class AppointmentsComponent implements OnInit {
     const app = this.activeAppointment();
     if (!app) return;
 
-    this.rescheduleDate.set(app.date); // Default to current date
+    this.rescheduleDate.set(app.date ? app.date.split('T')[0] : ''); // Default to current date in YYYY-MM-DD format
     this.selectedSlot.set('');
     this.availableSlots.set([]);
     this.isRescheduleOpen.set(true);

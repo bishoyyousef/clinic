@@ -2,22 +2,9 @@ import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ToastService } from '../../core/services/toast.service';
+import { SettingsService } from '../../core/services/settings.service';
+import { LanguageService } from '../../core/services/language.service';
 import { ButtonComponent } from '../../shared/components/button/button.component';
-
-const DEFAULT_SETTINGS = {
-  clinicName: 'Clarity Clinic',
-  supportEmail: 'support@clarityclinic.com',
-  hotline: '19999',
-  address: '15 El-Nasr St, Maadi, Cairo, Egypt',
-  defaultConsultationFee: 450,
-  bufferTime: '10',
-  slotDuration: '30',
-  enableSmsReminders: true,
-  enableEmailReceipts: true,
-  enableAutoCancel: false,
-  language: 'en',
-  weekStartDay: '0' // Sunday
-};
 
 @Component({
   selector: 'app-settings',
@@ -34,6 +21,8 @@ const DEFAULT_SETTINGS = {
 export class SettingsComponent implements OnInit {
   private fb = inject(FormBuilder);
   private toastService = inject(ToastService);
+  private settingsService = inject(SettingsService);
+  private languageService = inject(LanguageService);
 
   settingsForm!: FormGroup;
   isSubmitting = signal(false);
@@ -64,24 +53,15 @@ export class SettingsComponent implements OnInit {
   }
 
   /**
-   * Loads configurations from localStorage, falling back to DEFAULT_SETTINGS.
+   * Loads configurations from the reactive settings service.
    */
   loadSettings(): void {
-    try {
-      const stored = localStorage.getItem('clinic_global_settings');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        this.settingsForm.patchValue({ ...DEFAULT_SETTINGS, ...parsed });
-      } else {
-        this.settingsForm.patchValue(DEFAULT_SETTINGS);
-      }
-    } catch (e) {
-      this.settingsForm.patchValue(DEFAULT_SETTINGS);
-    }
+    const current = this.settingsService.settings();
+    this.settingsForm.patchValue(current);
   }
 
   /**
-   * Saves settings to localStorage.
+   * Saves settings to the SettingsService.
    */
   onSave(): void {
     if (this.settingsForm.invalid) {
@@ -94,13 +74,22 @@ export class SettingsComponent implements OnInit {
     // Simulate database write delay for premium feedback
     setTimeout(() => {
       try {
-        localStorage.setItem('clinic_global_settings', JSON.stringify(this.settingsForm.value));
+        const formValue = this.settingsForm.value;
+        this.settingsService.updateSettings(formValue);
+        
+        // Immediately sync selected language with LanguageService if it changed
+        const currentLang = formValue.language;
+        if (currentLang === 'en' || currentLang === 'ar') {
+          this.languageService.setLanguage(currentLang);
+        }
+        
         this.toastService.show('Clinic configuration settings updated successfully.', 'success');
       } catch (err) {
-        this.toastService.show('Failed to save settings to local storage.', 'error');
+        this.toastService.show('Failed to save clinic settings.', 'error');
       } finally {
         this.isSubmitting.set(false);
       }
     }, 600);
   }
 }
+

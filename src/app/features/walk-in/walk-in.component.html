@@ -242,7 +242,7 @@
             <div class="selection-item-subtitle">Duration: {{ svc.durationMinutes }} mins</div>
           </div>
           <div style="display: flex; align-items: center; gap: var(--s4);">
-            <span class="service-price">{{ svc.price | number:'1.0-0' }} EGP</span>
+            <span class="service-price">{{ svc.price | currencyEgp:0:0 }}</span>
             <div class="selection-indicator">
               <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none">
                 <polyline points="20 6 9 17 4 12"></polyline>
@@ -363,7 +363,7 @@
           <h4 class="summary-section-header">Billing & Payment</h4>
           <div class="summary-row">
             <span class="summary-lbl">Consultation Fee</span>
-            <span class="summary-val" style="font-weight: 700; font-size: 1.125rem; color: var(--text);">{{ selectedService()?.price | number:'1.0-0' }} EGP</span>
+            <span class="summary-val" style="font-weight: 700; font-size: 1.125rem; color: var(--text);">{{ selectedService()?.price | currencyEgp:0:0 }}</span>
           </div>
           <div class="summary-row">
             <span class="summary-lbl">Payment Mode</span>

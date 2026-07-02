@@ -5,6 +5,7 @@ import { ToastService } from '../../core/services/toast.service';
 import { ReportsDto } from '../../core/models/reports.model';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
+import { CurrencyEgpPipe } from '../../shared/pipes/currency-egp.pipe';
 
 @Component({
   selector: 'app-reports',
@@ -12,7 +13,8 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
   imports: [
     CommonModule,
     CardComponent,
-    LoadingSpinnerComponent
+    LoadingSpinnerComponent,
+    CurrencyEgpPipe
   ],
   template: `
     <div class="reports-container">
@@ -38,7 +40,7 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
             <div class="summary-card-body">
               <div class="summary-info">
                 <span class="summary-label">Total Revenue</span>
-                <span class="summary-value revenue-val">{{ totalRevenue | number:'1.2-2' }} EGP</span>
+                <span class="summary-value revenue-val">{{ totalRevenue | currencyEgp }}</span>
               </div>
               <div class="sum-icon revenue-icon">
                 <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.2" fill="none">
@@ -120,9 +122,9 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                   <div class="bar-wrap">
                     <div class="col-bar" 
                       [style.height.%]="(day.revenue / maxDayRevenue) * 100"
-                      [title]="day.revenue + ' EGP'">
+                      [title]="day.revenue | currencyEgp">
                       <!-- Tooltip popup on hover -->
-                      <span class="col-tip">{{ day.revenue | number:'1.0-0' }} EGP</span>
+                      <span class="col-tip">{{ day.revenue | currencyEgp:0:0 }}</span>
                     </div>
                   </div>
                   <span class="x-label">{{ day.date | date:'EEE d' }}</span>
@@ -161,7 +163,7 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
               <div class="stat-item" *ngFor="let item of reportsData()?.revenueByService">
                 <div class="stat-meta">
                   <span class="stat-label">{{ item.serviceName }}</span>
-                  <span class="stat-val">{{ item.revenue | number:'1.0-0' }} EGP</span>
+                  <span class="stat-val">{{ item.revenue | currencyEgp:0:0 }}</span>
                 </div>
                 <div class="progress-bar-bg">
                   <div class="progress-bar-fill service-fill" 

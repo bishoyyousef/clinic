@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { InitialsPipe } from '../../pipes/initials.pipe';
+import { CurrencyEgpPipe } from '../../pipes/currency-egp.pipe';
 
 export interface TableColumn {
   key: string;
@@ -12,7 +13,7 @@ export interface TableColumn {
 @Component({
   selector: 'app-data-table',
   standalone: true,
-  imports: [CommonModule, InitialsPipe],
+  imports: [CommonModule, InitialsPipe, CurrencyEgpPipe],
   template: `
     <div class="table-container">
       <table class="data-table">
@@ -49,7 +50,7 @@ export interface TableColumn {
                 </div>
                 <!-- EGP Currency cells -->
                 <span *ngSwitchCase="'currency'" class="currency-text">
-                  {{ row[col.key] | number:'1.2-2' }} EGP
+                  {{ row[col.key] | currencyEgp }}
                 </span>
                 <!-- Custom injected template cells -->
                 <ng-container *ngSwitchCase="'custom'">

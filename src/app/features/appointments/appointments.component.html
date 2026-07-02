@@ -221,7 +221,7 @@
         <div class="detail-row">
           <span class="detail-lbl">Total Fee</span>
           <span class="detail-val" style="color: var(--text); font-weight: 700;">
-            {{ (app.payment?.amount || 0) | number:'1.2-2' }} EGP
+            {{ (app.payment?.amount || 0) | currencyEgp }}
           </span>
         </div>
         <div class="detail-row">
@@ -257,7 +257,7 @@
         </div>
         
         <!-- Prescriptions -->
-        <div style="margin-top: var(--s3);" *ngIf="app.visit.prescription && app.visit.prescription.length > 0">
+        <div style="margin-top: var(--s3);" *ngIf="app.visit.prescription?.length">
           <span class="detail-lbl">Prescribed Treatment</span>
           <div class="visit-prescriptions">
             <span class="prescription-badge" *ngFor="let item of app.visit.prescription">
